@@ -60,6 +60,7 @@ public class DashboardPanel extends JPanel {
         btnLogout.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                System.out.println("Session trước khi xóa: " + userInfo.getSessionId());
                 int confirm = JOptionPane.showConfirmDialog(
                         mainFrame,
                         "Bạn có chắc chắn muốn đăng xuất?",
@@ -67,6 +68,7 @@ public class DashboardPanel extends JPanel {
                         JOptionPane.YES_NO_OPTION
                 );
                 if (confirm == JOptionPane.YES_OPTION) {
+                    userInfo.clearSession();
                     mainFrame.showLogin();
                 }
             }
@@ -286,12 +288,7 @@ public class DashboardPanel extends JPanel {
 
     // Hiển thị giao diện chuyển tiền nội bộ
     private void showInternalTransferScreen() {
-        JOptionPane.showMessageDialog(this, "Mở màn hình chuyển tiền nội bộ!", "Chuyển Tiền", JOptionPane.INFORMATION_MESSAGE);
-    }
-
-    // Hiển thị giao diện chuyển tiền Napas
-    private void showNapasTransferScreen() {
-        JOptionPane.showMessageDialog(this, "Mở màn hình chuyển tiền Napas!", "Chuyển Tiền Napas", JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(this, "Chuyển tiền nội bộ!", "Chuyển Tiền", JOptionPane.INFORMATION_MESSAGE);
     }
 
 }

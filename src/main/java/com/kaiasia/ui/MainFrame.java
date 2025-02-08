@@ -34,7 +34,6 @@ public class MainFrame extends JFrame {
         repaint();
     }
 
-    // Phương thức chuyển đến màn hình Napas Transfer
     public void showNapasTransferScreen() {
         getContentPane().removeAll();
         add(new NapasTransferPanel()); // Hiển thị trang NapasTransferPanel

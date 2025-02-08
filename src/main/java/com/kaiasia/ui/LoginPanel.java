@@ -106,38 +106,52 @@ public class LoginPanel extends JPanel {
         String username = txtUsername.getText();
         String password = new String(txtPassword.getPassword());
 
-        // Gọi API Auth để đăng nhập và nhận JSON response
         JSONObject jsonResponse = AuthApiClient.login(username, password);
 
-        if (jsonResponse != null) {
-            System.out.println("API Response: " + jsonResponse.toString(4)); // In JSON response ra console
-
-            JSONObject body = jsonResponse.optJSONObject("body");
-            if (body != null && "OK".equals(body.optString("status"))) {
-                JOptionPane.showMessageDialog(this, "Đăng nhập thành công!");
-
-                // Lấy thông tin từ JSON và tạo UserInfo
-                JSONObject enquiry = body.optJSONObject("enquiry");
-                if (enquiry != null) {
-                    UserInfo userInfo = new UserInfo(
-                            enquiry.optString("customerName", "N/A"),
-                            enquiry.optString("customerID", "N/A"),
-                            enquiry.optString("username", "N/A"),
-                            enquiry.optString("phone", "N/A")
-                    );
-
-                    // Gọi phương thức showDashboard với tham số userInfo
-                    mainFrame.showDashboard(userInfo);
-                } else {
-                    JOptionPane.showMessageDialog(this, "Lỗi: Không tìm thấy thông tin người dùng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "Đăng nhập thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "Lỗi kết nối đến server!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        if (jsonResponse == null) {
+            JOptionPane.showMessageDialog(this, "Không thể kết nối đến server. Vui lòng kiểm tra lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
         }
-    }
 
+        System.out.println("API Response: " + jsonResponse.toString(4)); // Debug response
+
+        // Kiểm tra lỗi từ API
+        JSONObject error = jsonResponse.optJSONObject("error");
+        if (error != null) {
+            String errorCode = error.optString("code", "Unknown");
+            String errorDesc = error.optString("desc", "Lỗi không xác định!");
+
+            if ("04".equals(errorCode)) {
+                JOptionPane.showMessageDialog(this, "Sai mật khẩu! Vui lòng thử lại.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(this, "Lỗi: " + errorDesc + " (Mã: " + errorCode + ")", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+            return;
+        }
+
+        // Kiểm tra phản hồi hợp lệ
+        JSONObject body = jsonResponse.optJSONObject("body");
+        if (body == null || !"OK".equals(body.optString("status"))) {
+            JOptionPane.showMessageDialog(this, "Đăng nhập thất bại! Trạng thái: " + (body != null ? body.optString("status") : "null"), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        JSONObject enquiry = body.optJSONObject("enquiry");
+        if (enquiry == null) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin người dùng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        UserInfo userInfo = new UserInfo(
+                enquiry.optString("customerName", "N/A"),
+                enquiry.optString("customerID", "N/A"),
+                enquiry.optString("username", "N/A"),
+                enquiry.optString("phone", "N/A"),
+                enquiry.optString("sessionId", "N/A")
+        );
+
+        JOptionPane.showMessageDialog(this, "Đăng nhập thành công!");
+        mainFrame.showDashboard(userInfo);
+    }
 
 }
