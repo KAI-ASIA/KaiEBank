@@ -46,7 +46,7 @@ public class ProfilePanel extends JPanel {
         gbc.gridy++;
         add(btnChangePassword, gbc);
 
-        JButton btnGetOtp = new JButton("Lấy OTP");  // Nút lấy OTP
+        JButton btnGetOtp = new JButton("Lấy OTP");
         gbc.gridy++;
         add(btnGetOtp, gbc);
 
@@ -54,9 +54,9 @@ public class ProfilePanel extends JPanel {
         gbc.gridy++;
         add(btnBack, gbc);
 
-        btnChangePassword.addActionListener(e -> showChangePasswordDialog());
-        btnGetOtp.addActionListener(e -> handleGetOtp()); // Thêm xử lý lấy OTP
-        btnBack.addActionListener(e -> mainFrame.showDashboard(userInfo));
+        btnChangePassword.addActionListener(e -> showChangePasswordDialog()); // Gọi dialog đổi mật khẩu
+        btnGetOtp.addActionListener(e -> handleGetOtp()); // Gọi hàm xử lý lấy OTP
+        btnBack.addActionListener(e -> mainFrame.showDashboard());
     }
 
     private void showChangePasswordDialog() {
@@ -120,14 +120,14 @@ public class ProfilePanel extends JPanel {
 
             String status = response.getJSONObject("body").optString("status", "FAILED");
             if ("OK".equals(status)) {
-                JOptionPane.showMessageDialog(changePassDialog, "Đổi mật khẩu thành công!", "Thành công", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(changePassDialog, "Đổi mật khẩu thành công! Vui lòng đăng nhập lại ứng dụng", "Thành công", JOptionPane.INFORMATION_MESSAGE);
                 changePassDialog.dispose();
+                mainFrame.showLogin();
             } else {
                 String message = response.getJSONObject("body").optString("message", "Đổi mật khẩu thất bại!");
                 JOptionPane.showMessageDialog(changePassDialog, message, "Lỗi", JOptionPane.ERROR_MESSAGE);
             }
         });
-
 
         btnCancel.addActionListener(e -> changePassDialog.dispose());
 

@@ -19,10 +19,12 @@ import static com.kaiasia.t24utils.T24UtilsApiClient.showAccountDetails;
 public class DashboardPanel extends JPanel {
     private MainFrame mainFrame;
     private JPanel accountPanel;
+    private UserInfo userInfo;
 
     public DashboardPanel(MainFrame mainFrame, UserInfo userInfo) {
         this.mainFrame = mainFrame;
         setLayout(new BorderLayout());
+        System.out.println("DEBUG: userInfo trong DashboardPanel: " + userInfo);
 
         // Sidebar
         JPanel sidebar = new JPanel();
@@ -35,7 +37,7 @@ public class DashboardPanel extends JPanel {
         lblUserName.setForeground(Color.BLUE);
         lblUserName.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        // Click vào tên để mở trang thông tin cá nhân
+        // Mở trang thông tin cá nhân
         lblUserName.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -104,8 +106,6 @@ public class DashboardPanel extends JPanel {
 
         accountPanel.setBorder(titledBorder);
 
-
-        // Gọi API lấy danh sách tài khoản
         loadAccounts(userInfo.getCustomerID());
 
         mainContent.add(lblWelcome, BorderLayout.NORTH);
@@ -233,24 +233,23 @@ public class DashboardPanel extends JPanel {
 
         // Panel chứa hai nút
         JPanel menuPanel = new JPanel();
-        menuPanel.setLayout(new GridLayout(2, 1, 10, 10)); // 2 hàng, khoảng cách 10px
+        menuPanel.setLayout(new GridLayout(2, 1, 10, 10));
         menuPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Kích thước đúng với nút gốc, chiều cao bằng 1/2 nút gốc
-        Dimension buttonSize = new Dimension(button.getWidth(), button.getHeight() / 2);  // Half the height
+        Dimension buttonSize = new Dimension(button.getWidth(), button.getHeight() / 2);
 
         // Tạo nút Chuyển tiền nội bộ
         JButton internalTransfer = new JButton("Chuyển tiền nội bộ");
         internalTransfer.setPreferredSize(buttonSize);
-        internalTransfer.setFont(new Font("Arial", Font.BOLD, 16)); // Cùng cỡ chữ như btnTransfer
-        internalTransfer.setMargin(new Insets(10, 10, 10, 10)); // Giữ khoảng cách chữ
+        internalTransfer.setFont(new Font("Arial", Font.BOLD, 16));
+        internalTransfer.setMargin(new Insets(10, 10, 10, 10));
         internalTransfer.setFocusPainted(false);
 
         // Tạo nút Chuyển tiền Napas
         JButton napasTransfer = new JButton("Chuyển tiền Napas");
         napasTransfer.setPreferredSize(buttonSize);
-        napasTransfer.setFont(new Font("Arial", Font.BOLD, 16)); // Cùng cỡ chữ như btnTransfer
-        napasTransfer.setMargin(new Insets(10, 10, 10, 10)); // Giữ khoảng cách chữ
+        napasTransfer.setFont(new Font("Arial", Font.BOLD, 16));
+        napasTransfer.setMargin(new Insets(10, 10, 10, 10));
         napasTransfer.setFocusPainted(false);
 
         // Sự kiện khi chọn Chuyển tiền nội bộ
@@ -262,12 +261,11 @@ public class DashboardPanel extends JPanel {
         });
 
         // Sự kiện khi chọn Chuyển tiền Napas
-        napasTransfer.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mainFrame.showNapasTransferScreen();
-            }
+        napasTransfer.addActionListener(e -> {
+            System.out.println("DEBUG: Gọi showNapasTransferScreen với userInfo: " + mainFrame.getCurrentUser());
+            mainFrame.showNapasTransferScreen(mainFrame.getCurrentUser());
         });
+
 
         // Thêm hai nút vào panel
         menuPanel.add(internalTransfer);
@@ -280,7 +278,7 @@ public class DashboardPanel extends JPanel {
         // Định dạng menu
         transferMenu.setLayout(new BorderLayout());
         transferMenu.add(menuPanel, BorderLayout.CENTER);
-        transferMenu.setPreferredSize(new Dimension(buttonSize.width + 20, buttonSize.height * 2 + 20)); // Đảm bảo menu không bị nhỏ
+        transferMenu.setPreferredSize(new Dimension(buttonSize.width + 20, buttonSize.height * 2 + 20));
 
         // Hiển thị menu ngay dưới nút
         transferMenu.show(button, 0, button.getHeight());

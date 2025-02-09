@@ -2,13 +2,10 @@ package com.kaiasia.ui;
 
 import com.kaiasia.auth.AuthApiClient;
 import com.kaiasia.model.UserInfo;
-import com.kaiasia.t24utils.T24UtilsApiClient;
 import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class LoginPanel extends JPanel {
     private JTextField txtUsername;
@@ -20,7 +17,7 @@ public class LoginPanel extends JPanel {
     public LoginPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
         setLayout(new GridBagLayout());
-        setBackground(Color.WHITE); // Nền trắng
+        setBackground(Color.WHITE);
         GridBagConstraints gbc = new GridBagConstraints();
 
         // Tiêu đề
@@ -63,7 +60,7 @@ public class LoginPanel extends JPanel {
         gbc.gridx = 1;
         add(txtPassword, gbc);
 
-        // Forgot Password link
+        // Forgot Password
         lblForgotPassword = new JLabel("<html><u>Quên tài khoản/mật khẩu?</u></html>");
         lblForgotPassword.setFont(new Font("Arial", Font.PLAIN, 14));
         lblForgotPassword.setForeground(Color.RED);
@@ -88,12 +85,7 @@ public class LoginPanel extends JPanel {
         gbc.insets = new Insets(15, 0, 20, 0);
         add(btnLogin, gbc);
 
-        btnLogin.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                performLogin();
-            }
-        });
+        btnLogin.addActionListener(e -> performLogin());
 
         lblForgotPassword.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -113,7 +105,7 @@ public class LoginPanel extends JPanel {
             return;
         }
 
-        System.out.println("API Response: " + jsonResponse.toString(4)); // Debug response
+        System.out.println("API Response: " + jsonResponse.toString(4));
 
         // Kiểm tra lỗi từ API
         JSONObject error = jsonResponse.optJSONObject("error");
@@ -150,8 +142,12 @@ public class LoginPanel extends JPanel {
                 enquiry.optString("sessionId", "N/A")
         );
 
-        JOptionPane.showMessageDialog(this, "Đăng nhập thành công!");
-        mainFrame.showDashboard(userInfo);
-    }
+        // Cập nhật currentUser trước khi mở Dashboard
+        mainFrame.setCurrentUser(userInfo);
 
+        JOptionPane.showMessageDialog(this, "Đăng nhập thành công!");
+        System.out.println("DEBUG: userInfo sau khi đăng nhập: " + userInfo);
+
+        mainFrame.showDashboard();
+    }
 }
