@@ -45,6 +45,7 @@ public class T24UtilsApiClient {
 //        }
 //    }
 
+    //KAI.API.CUSTOMER.GET.ACC
     public static JSONObject getCustomerAccounts(String customerId) {
         try {
             JSONObject requestJson = new JSONObject();
@@ -68,6 +69,7 @@ public class T24UtilsApiClient {
         }
     }
 
+    //KAI.API.ACCOUNT.GET.INFO
     public static JSONObject getAccountInfo(String accountId) {
         try {
             JSONObject requestJson = new JSONObject();
@@ -107,4 +109,29 @@ public class T24UtilsApiClient {
             JOptionPane.showMessageDialog(null, "Không thể lấy thông tin tài khoản!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    //KAI.API.CUST.GET.INFO
+    public static JSONObject getCustomerEmailFromT24(String customerId) {
+        try {
+            JSONObject requestJson = new JSONObject();
+            requestJson.put("header", createHeader());
+
+            JSONObject body = new JSONObject();
+            body.put("command", "GET_ENQUIRY");
+
+            JSONObject enquiry = new JSONObject();
+            enquiry.put("authenType", "KAI.API.CUST.GET.INFO");
+            enquiry.put("customerId", customerId);
+            body.put("enquiry", enquiry);
+
+            requestJson.put("body", body);
+
+            String response = HttpUtils.postJson(Config.T24_UTIL_API_URL, requestJson.toString());
+            return new JSONObject(response);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
 }

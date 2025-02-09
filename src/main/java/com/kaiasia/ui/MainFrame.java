@@ -4,7 +4,8 @@ import com.kaiasia.model.UserInfo;
 import javax.swing.*;
 
 public class MainFrame extends JFrame {
-    private UserInfo currentUser;
+    private static UserInfo currentUser;
+    private ProfilePanel ProfilePanel;
 
     public MainFrame() {
         super("E-Bank Application");
@@ -37,13 +38,18 @@ public class MainFrame extends JFrame {
         repaint();
     }
 
+    public void updateUserInfo(UserInfo userInfo) {
+        setCurrentUser(userInfo);
+        if (ProfilePanel != null) {
+            ProfilePanel.updateEmail(userInfo.getEmail()); // Cập nhật email trong ProfilePanel
+        }
+    }
+
     public void showNapasTransferScreen(UserInfo userInfo) {
         if (userInfo == null) {
             System.out.println("DEBUG: userInfo truyền vào null, dùng currentUser trong MainFrame");
             userInfo = this.currentUser;
         }
-
-        System.out.println("DEBUG: Gọi showNapasTransferScreen với userInfo: " + userInfo);
 
         if (userInfo == null || userInfo.getCustomerID() == null || userInfo.getCustomerID().isEmpty()) {
             System.out.println("LỖI: UserInfo không hợp lệ khi mở Napas Transfer! currentUser = " + userInfo);
@@ -59,7 +65,7 @@ public class MainFrame extends JFrame {
         repaint();
     }
 
-    public UserInfo getCurrentUser() {
+    public static UserInfo getCurrentUser() {
         return currentUser;
     }
 

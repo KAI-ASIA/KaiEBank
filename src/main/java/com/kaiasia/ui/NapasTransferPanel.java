@@ -152,7 +152,7 @@ public class NapasTransferPanel extends JPanel {
             System.out.println("Kết quả giao dịch:\n" + response.toString(2));
 
             if (transaction != null && "00".equals(transaction.optString("responseCode"))) {
-                JOptionPane.showMessageDialog(this, "Chuyển tiền thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Chuyển tiền thành công! Nhấn OK để trờ về màn hình chính", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
                 mainFrame.showDashboard();
             } else {
                 JOptionPane.showMessageDialog(this, "Chuyển tiền thất bại! Kiểm tra lại thông tin.", "Lỗi", JOptionPane.ERROR_MESSAGE);

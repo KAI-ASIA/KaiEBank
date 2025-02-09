@@ -13,6 +13,10 @@ public class Config {
     public static final String T24_UTIL_API_URL = "http://14.225.254.212:8080/T24_UTIL_API/process";
     public static final String T24_UTIL_API_KEY = "VDI0X1VUSUxfQVBJ";
 
+    // EBANK API
+    public static final String EBANK_API_URL = "http://14.225.254.212:8077/EBANK_API/process";
+    public static final String EBANK_API_KEY = "custinfoq51klfoni1ezxl5f2ckpfx671";
+
     private Config() {
 
     }

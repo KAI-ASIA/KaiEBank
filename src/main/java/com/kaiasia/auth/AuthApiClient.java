@@ -10,66 +10,74 @@ public class AuthApiClient {
     private static String username;
     private static String userEmail;
 
+    // Tạo header chung cho API
+    private static JSONObject createHeader() {
+        JSONObject header = new JSONObject();
+        header.put("reqType", "REQUEST");
+        header.put("api", "AUTH_API");
+        header.put("apiKey", Config.AUTH_API_KEY);
+        header.put("priority", "1");
+        header.put("channel", "API");
+        header.put("location", "PC/IOS");
+        header.put("requestAPI", "FE API");
+        header.put("requestNode", "node 01");
+        header.put("synasyn", "false");
+        return header;
+    }
+
+    // Tạo request chung cho API
+    private static JSONObject createRequest(String command, JSONObject enquiry) {
+        JSONObject requestJson = new JSONObject();
+        requestJson.put("header", createHeader());
+
+        JSONObject body = new JSONObject();
+        body.put("command", command);
+        body.put("enquiry", enquiry);
+
+        requestJson.put("body", body);
+        return requestJson;
+    }
+
+    // Xử lý phản hồi API
+    private static JSONObject parseResponse(String response, String apiType) {
+        if (response == null || response.isEmpty()) {
+            System.err.println(apiType + " - API trả về null hoặc rỗng!");
+            return null;
+        }
+
+        JSONObject jsonResponse = new JSONObject(response);
+        System.out.println(apiType + " - API Response: " + jsonResponse.toString(4));
+
+        if (jsonResponse.has("error")) {
+            JSONObject error = jsonResponse.getJSONObject("error");
+            System.err.println(apiType + " - Lỗi API: " + error.optString("code") + " - " + error.optString("desc"));
+            return jsonResponse;
+        }
+
+        return jsonResponse;
+    }
+
+    // LOGIN
     public static JSONObject login(String username, String password) {
         try {
-            JSONObject requestJson = new JSONObject();
-
-            JSONObject header = new JSONObject();
-            header.put("reqType", "REQUEST");
-            header.put("api", "AUTH_API");
-            header.put("apiKey", Config.AUTH_API_KEY);
-            header.put("priority", "1");
-            header.put("channel", "API");
-            header.put("location", "PC/IOS");
-            header.put("requestAPI", "FE API");
-            header.put("requestNode", "node 01");
-
-            JSONObject body = new JSONObject();
-            body.put("command", "GET_ENQUIRY");
-
             JSONObject enquiry = new JSONObject();
             enquiry.put("authenType", "login");
             enquiry.put("username", username);
             enquiry.put("password", password);
-            body.put("enquiry", enquiry);
 
-            requestJson.put("header", header);
-            requestJson.put("body", body);
-
-            System.out.println("Gửi request API: " + requestJson.toString(4));
+            JSONObject requestJson = createRequest("GET_ENQUIRY", enquiry);
+            System.out.println("Gửi request đăng nhập: " + requestJson.toString(4));
 
             String response = HttpUtils.postJson(Config.AUTH_API_URL, requestJson.toString());
+            JSONObject jsonResponse = parseResponse(response, "LOGIN");
 
-            if (response.isEmpty()) {
-                System.err.println("Lỗi: API trả về null hoặc rỗng!");
-                return null;
+            if (jsonResponse != null && "OK".equals(jsonResponse.optJSONObject("body").optString("status"))) {
+                JSONObject enquiryResponse = jsonResponse.getJSONObject("body").getJSONObject("enquiry");
+                sessionId = enquiryResponse.getString("sessionId");
+                AuthApiClient.username = username;
+                AuthApiClient.userEmail = enquiryResponse.optString("gmail", "");
             }
 
-            JSONObject jsonResponse = new JSONObject(response);
-
-            if (jsonResponse.has("error")) {
-                JSONObject error = jsonResponse.getJSONObject("error");
-                System.err.println("API báo lỗi: " + error.optString("code") + " - " + error.optString("desc"));
-                return jsonResponse;
-            }
-
-            JSONObject responseBody = jsonResponse.optJSONObject("body");
-            if (responseBody == null || !"OK".equals(responseBody.optString("status"))) {
-                System.err.println("Đăng nhập thất bại! Trạng thái: " + responseBody.optString("status"));
-                return jsonResponse;
-            }
-
-            JSONObject enquiryResponse = responseBody.optJSONObject("enquiry");
-            if (enquiryResponse == null || !enquiryResponse.has("sessionId")) {
-                System.err.println("API không trả về sessionId!");
-                return jsonResponse;
-            }
-
-            sessionId = enquiryResponse.getString("sessionId");
-            AuthApiClient.username = username;
-            AuthApiClient.userEmail = enquiryResponse.optString("gmail", "");
-
-            System.out.println("Đăng nhập thành công. Session ID: " + sessionId);
             return jsonResponse;
 
         } catch (Exception ex) {
@@ -79,6 +87,37 @@ public class AuthApiClient {
         }
     }
 
+    // CHANGE_PASSWORD
+    public static JSONObject changePassword(String oldPassword, String newPassword, String reNewPassword) {
+        try {
+            if (sessionId == null) {
+                System.err.println("Không thể đổi mật khẩu: sessionId null. Vui lòng đăng nhập lại.");
+                return null;
+            }
+
+            JSONObject enquiry = new JSONObject();
+            enquiry.put("authenType", "changePassword");
+            enquiry.put("sessionId", sessionId);
+            enquiry.put("username", username);
+            enquiry.put("oldPassword", oldPassword);
+            enquiry.put("newPassword", newPassword);
+            enquiry.put("reNewPassword", reNewPassword);
+            enquiry.put("transId", "AUTHEN-changePass-" + System.currentTimeMillis());
+
+            JSONObject requestJson = createRequest("GET_ENQUIRY", enquiry);
+            System.out.println("Gửi request đổi mật khẩu: " + requestJson.toString(4));
+
+            String response = HttpUtils.postJson(Config.AUTH_API_URL, requestJson.toString());
+            return parseResponse(response, "CHANGE_PASSWORD");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println("Lỗi ngoại lệ khi đổi mật khẩu: " + ex.getMessage());
+            return null;
+        }
+    }
+
+    // GET_OTP với email cho sẵn
     public static JSONObject getOtp() {
         try {
             if (sessionId == null || username == null) {
@@ -127,7 +166,7 @@ public class AuthApiClient {
             requestJson.put("header", header);
             requestJson.put("body", body);
 
-            // Debug toàn bộ request JSON
+            // Debug request JSON
             System.out.println("GỬI REQUEST LẤY OTP");
             System.out.println(requestJson.toString(4));
 
@@ -164,66 +203,92 @@ public class AuthApiClient {
         }
     }
 
+//    // GET_OTP với email riêng của từng tài khoản
+//    public static JSONObject getOtp() {
+//        try {
+//            if (sessionId == null || username == null) {
+//                System.err.println("Không thể lấy OTP: sessionId hoặc username null. Vui lòng đăng nhập lại.");
+//                return null;
+//            }
+//
+//            // Kiểm tra userEmail trước khi gửi
+//            if (userEmail == null || userEmail.trim().isEmpty()) {
+//                System.err.println("Lỗi: userEmail null hoặc rỗng! Đang cập nhật lại từ currentUser");
+//
+//                // Lấy email từ currentUser nếu có
+//                UserInfo currentUser = MainFrame.getCurrentUser();
+//                if (currentUser != null) {
+//                    userEmail = currentUser.getEmail();
+//                }
+//            }
+//
+//            System.out.println("DEBUG: Gửi request lấy OTP với email: " + userEmail);
+//
+//            JSONObject enquiry = new JSONObject();
+//            enquiry.put("authenType", "getOTP");
+//            enquiry.put("sessionId", sessionId);
+//            enquiry.put("username", username);
+//            enquiry.put("gmail", userEmail);
+//            enquiry.put("transTime", System.currentTimeMillis());
+//            enquiry.put("transId", "AUTHEN-getOTP-" + System.currentTimeMillis());
+//            enquiry.put("transInfo", "Giao dịch lấy mã OTP");
+//
+//            JSONObject requestJson = createRequest("GET_ENQUIRY", enquiry);
+//
+//            // Debug log request
+//            System.out.println("Gửi request lấy OTP: " + requestJson.toString(4));
+//
+//            String response = HttpUtils.postJson(Config.AUTH_API_URL, requestJson.toString());
+//            return parseResponse(response, "GET_OTP");
+//
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//            System.err.println("Lỗi ngoại lệ khi lấy OTP: " + ex.getMessage());
+//            return null;
+//        }
+//    }
 
-    public static JSONObject changePassword(String username, String oldPassword, String newPassword, String reNewPassword) {
+
+    // REQUEST_RESET_CODE
+    public static JSONObject requestResetCode(String username) {
         try {
-            if (sessionId == null) {
-                System.err.println("Không thể đổi mật khẩu: sessionId null. Vui lòng đăng nhập lại.");
-                return null;
-            }
-
-            JSONObject requestJson = new JSONObject();
-            JSONObject header = new JSONObject();
-            header.put("reqType", "REQUEST");
-            header.put("api", "AUTH_API");
-            header.put("apiKey", Config.AUTH_API_KEY);
-            header.put("priority", 1);
-            header.put("channel", "MOBILE");
-            header.put("location", "PC/IOS");
-            header.put("requestAPI", "FE API");
-            header.put("requestNode", "node 01");
-
-            JSONObject body = new JSONObject();
-            body.put("command", "GET_ENQUIRY");
-
             JSONObject enquiry = new JSONObject();
-            enquiry.put("authenType", "changePassword");
-            enquiry.put("sessionId", sessionId);
+            enquiry.put("authenType", "resetPassword");
+            enquiry.put("transId", "AUTHEN-resetPassword-" + System.currentTimeMillis());
             enquiry.put("username", username);
-            enquiry.put("oldPassword", oldPassword);
-            enquiry.put("newPassword", newPassword);
-            enquiry.put("reNewPassword", reNewPassword);
-            enquiry.put("transId", "AUTHEN-changePass-" + System.currentTimeMillis());
 
-            body.put("enquiry", enquiry);
-            requestJson.put("header", header);
-            requestJson.put("body", body);
-
-            System.out.println("Gửi request đổi mật khẩu: " + requestJson.toString(4));
+            JSONObject requestJson = createRequest("GET_ENQUIRY", enquiry);
+            System.out.println("Gửi request quên mật khẩu: " + requestJson.toString(4));
 
             String response = HttpUtils.postJson(Config.AUTH_API_URL, requestJson.toString());
-
-            if (response == null || response.isEmpty()) {
-                System.err.println("API đổi mật khẩu trả về null hoặc rỗng!");
-                return null;
-            }
-
-            System.out.println("API phản hồi đổi mật khẩu: " + response);
-
-            JSONObject jsonResponse = new JSONObject(response);
-
-            if (jsonResponse.has("error")) {
-                JSONObject error = jsonResponse.getJSONObject("error");
-                System.err.println("Lỗi khi đổi mật khẩu: " + error.optString("code") + " - " + error.optString("desc"));
-                return jsonResponse;
-            }
-
-            System.out.println("Đổi mật khẩu thành công!");
-            return jsonResponse;
+            return parseResponse(response, "REQUEST_RESET_CODE");
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            System.err.println("Lỗi ngoại lệ khi đổi mật khẩu: " + ex.getMessage());
+            System.err.println("Lỗi khi gửi yêu cầu quên mật khẩu: " + ex.getMessage());
+            return null;
+        }
+    }
+
+    // RESET_PASSWORD
+    public static JSONObject resetPassword(String username, String resetCode, String newPassword) {
+        try {
+            JSONObject enquiry = new JSONObject();
+            enquiry.put("authenType", "setPassword");
+            enquiry.put("transId", "AUTHEN-setPassword-" + System.currentTimeMillis());
+            enquiry.put("username", username);
+            enquiry.put("resetCode", resetCode);
+            enquiry.put("newPassword", newPassword);
+
+            JSONObject requestJson = createRequest("GET_ENQUIRY", enquiry);
+            System.out.println("Gửi request đặt lại mật khẩu: " + requestJson.toString(4));
+
+            String response = HttpUtils.postJson(Config.AUTH_API_URL, requestJson.toString());
+            return parseResponse(response, "RESET_PASSWORD");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println("Lỗi khi đặt lại mật khẩu: " + ex.getMessage());
             return null;
         }
     }

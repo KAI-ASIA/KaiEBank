@@ -1,11 +1,14 @@
 package com.kaiasia.ui;
 
 import com.kaiasia.auth.AuthApiClient;
+import com.kaiasia.t24utils.T24UtilsApiClient;
 import com.kaiasia.model.UserInfo;
 import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class LoginPanel extends JPanel {
     private JTextField txtUsername;
@@ -39,7 +42,7 @@ public class LoginPanel extends JPanel {
         gbc.insets = new Insets(10, 5, 5, 5);
         add(lblUsername, gbc);
 
-        // Username input
+        // Username
         txtUsername = new JTextField(20);
         txtUsername.setFont(new Font("Arial", Font.PLAIN, 16));
         txtUsername.setPreferredSize(new Dimension(250, 40));
@@ -65,6 +68,25 @@ public class LoginPanel extends JPanel {
         lblForgotPassword.setFont(new Font("Arial", Font.PLAIN, 14));
         lblForgotPassword.setForeground(Color.RED);
         lblForgotPassword.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        lblForgotPassword.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                JFrame parentFrame = (JFrame) SwingUtilities.getWindowAncestor(LoginPanel.this);
+
+                // Kiểm tra nếu parentFrame là MainFrame
+                if (parentFrame instanceof MainFrame) {
+                    MainFrame mainFrame = (MainFrame) parentFrame;
+
+                    // Chuyển sang ForgotPasswordPanel
+                    mainFrame.getContentPane().removeAll();
+                    mainFrame.getContentPane().add(new ForgotPasswordPanel(mainFrame));
+                    mainFrame.revalidate();
+                    mainFrame.repaint();
+                }
+            }
+        });
+
         gbc.gridx = 1;
         gbc.gridy = 3;
         gbc.anchor = GridBagConstraints.WEST;
@@ -86,12 +108,6 @@ public class LoginPanel extends JPanel {
         add(btnLogin, gbc);
 
         btnLogin.addActionListener(e -> performLogin());
-
-        lblForgotPassword.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                JOptionPane.showMessageDialog(null, "Vui lòng liên hệ tổng đài để lấy lại mật khẩu.");
-            }
-        });
     }
 
     private void performLogin() {
@@ -124,7 +140,7 @@ public class LoginPanel extends JPanel {
         // Kiểm tra phản hồi hợp lệ
         JSONObject body = jsonResponse.optJSONObject("body");
         if (body == null || !"OK".equals(body.optString("status"))) {
-            JOptionPane.showMessageDialog(this, "Đăng nhập thất bại! Trạng thái: " + (body != null ? body.optString("status") : "null"), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Đăng nhập thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
@@ -134,20 +150,63 @@ public class LoginPanel extends JPanel {
             return;
         }
 
+        // Lấy thông tin user từ login API
+        String customerID = enquiry.optString("customerID", "N/A");
         UserInfo userInfo = new UserInfo(
                 enquiry.optString("customerName", "N/A"),
-                enquiry.optString("customerID", "N/A"),
+                customerID,
                 enquiry.optString("username", "N/A"),
                 enquiry.optString("phone", "N/A"),
-                enquiry.optString("sessionId", "N/A")
+                enquiry.optString("sessionId", "N/A"),
+                "N/A"  // Email lấy từ T24
         );
 
-        // Cập nhật currentUser trước khi mở Dashboard
+        // Gọi API T24 để lấy email
+        new Thread(() -> {
+            JSONObject t24Response = T24UtilsApiClient.getCustomerEmailFromT24(customerID);
+            if (t24Response != null && "OK".equals(t24Response.optJSONObject("body").optString("status"))) {
+                JSONObject t24Enquiry = t24Response.optJSONObject("body").optJSONObject("enquiry");
+                String email = t24Enquiry.optString("email", "N/A");
+
+                // Cập nhật email vào userInfo
+                userInfo.setEmail(email);
+                System.out.println("DEBUG: Email từ T24: " + email);
+
+                // Cập nhật giao diện ProfilePanel
+                SwingUtilities.invokeLater(() -> mainFrame.updateUserInfo(userInfo));
+            }
+        }).start();
+
+        // Cập nhật currentUser
         mainFrame.setCurrentUser(userInfo);
 
-        JOptionPane.showMessageDialog(this, "Đăng nhập thành công!");
-        System.out.println("DEBUG: userInfo sau khi đăng nhập: " + userInfo);
+        // Hiển thị thông báo thành công trong 2 giây trước khi chuyển vào Dashboard
+        JWindow messageWindow = new JWindow();
+        JLabel messageLabel = new JLabel("Đăng nhập thành công!", SwingConstants.CENTER);
+        messageLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        messageLabel.setBackground(new Color(0, 128, 0));
+        messageLabel.setForeground(Color.WHITE);
+        messageLabel.setOpaque(true);
+
+        messageWindow.getContentPane().add(messageLabel);
+        messageWindow.setSize(250, 100);
+        messageWindow.setLocationRelativeTo(null);
+        messageWindow.setVisible(true);
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException ignored) {}
+
+            messageWindow.dispose();
+
+            // Chuyển vào Dashboard
+            SwingUtilities.invokeLater(() -> mainFrame.showDashboard());
+        }).start();
+
+        System.out.println("DEBUG: userInfo sau khi login: " + userInfo);
 
         mainFrame.showDashboard();
     }
+
 }

@@ -19,7 +19,6 @@ import static com.kaiasia.t24utils.T24UtilsApiClient.showAccountDetails;
 public class DashboardPanel extends JPanel {
     private MainFrame mainFrame;
     private JPanel accountPanel;
-    private UserInfo userInfo;
 
     public DashboardPanel(MainFrame mainFrame, UserInfo userInfo) {
         this.mainFrame = mainFrame;
@@ -265,7 +264,6 @@ public class DashboardPanel extends JPanel {
             System.out.println("DEBUG: Gọi showNapasTransferScreen với userInfo: " + mainFrame.getCurrentUser());
             mainFrame.showNapasTransferScreen(mainFrame.getCurrentUser());
         });
-
 
         // Thêm hai nút vào panel
         menuPanel.add(internalTransfer);

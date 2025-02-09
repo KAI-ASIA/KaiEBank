@@ -6,14 +6,17 @@ public class UserInfo {
     private String username;
     private String phone;
     private String sessionId;
+    private String email;
 
-    public UserInfo(String customerName, String customerID, String username, String phone, String sessionId) {
+    public UserInfo(String customerName, String customerID, String username, String phone, String sessionId, String email) {
         this.customerName = customerName;
         this.customerID = customerID;
         this.username = username;
         this.phone = phone;
         this.sessionId = sessionId;
+        this.email = email;
     }
+
 
     public String getSessionId() {
         return sessionId;
@@ -34,6 +37,10 @@ public class UserInfo {
     public String getPhone() {
         return phone;
     }
+
+    public String getEmail() { return email; }
+
+    public void setEmail(String email) { this.email = email;}
 
     public void clearSession() {
         this.sessionId = null;

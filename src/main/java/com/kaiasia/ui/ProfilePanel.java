@@ -2,6 +2,7 @@ package com.kaiasia.ui;
 
 import com.kaiasia.auth.AuthApiClient;
 import com.kaiasia.model.UserInfo;
+import javafx.scene.control.Labeled;
 import org.json.JSONObject;
 
 import javax.swing.*;
@@ -37,6 +38,10 @@ public class ProfilePanel extends JPanel {
         JLabel lblPhone = new JLabel("Số điện thoại: " + userInfo.getPhone());
         gbc.gridy++;
         add(lblPhone, gbc);
+
+        JLabel lblEmail = new JLabel("Email: " + userInfo.getEmail());
+        gbc.gridy++;
+        add(lblEmail, gbc);
 
         JLabel lblUsername = new JLabel("Username: " + userInfo.getUsername());
         gbc.gridy++;
@@ -111,7 +116,7 @@ public class ProfilePanel extends JPanel {
                 return;
             }
 
-            JSONObject response = AuthApiClient.changePassword(userInfo.getUsername(), oldPassword, newPassword, reNewPassword);
+            JSONObject response = AuthApiClient.changePassword(oldPassword, newPassword, reNewPassword);
 
             if (response == null) {
                 JOptionPane.showMessageDialog(changePassDialog, "Lỗi hệ thống, vui lòng thử lại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
@@ -151,10 +156,14 @@ public class ProfilePanel extends JPanel {
 
         JSONObject body = response.optJSONObject("body");
         if (body != null && "OK".equals(body.optString("status"))) {
-            String otpCode = body.optString("otp", "Không có mã OTP!");
-            JOptionPane.showMessageDialog(this, "Mã OTP của bạn: " + otpCode, "OTP", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Vui lòng kiểm tra email để nhận mã xác thực ", "OTP", JOptionPane.INFORMATION_MESSAGE);
         } else {
             JOptionPane.showMessageDialog(this, "Lấy OTP thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    public void updateEmail(String email) {
+        Labeled lblEmail = null;
+        lblEmail.setText("Email: " + (email != null ? email : "N/A"));
     }
 }
