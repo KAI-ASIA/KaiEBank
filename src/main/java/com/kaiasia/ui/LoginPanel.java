@@ -16,6 +16,7 @@ public class LoginPanel extends JPanel {
     private JButton btnLogin;
     private JLabel lblForgotPassword;
     private MainFrame mainFrame;
+    public static UserInfo userInfoShare;
 
     public LoginPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;

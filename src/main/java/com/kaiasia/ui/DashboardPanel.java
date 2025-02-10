@@ -1,5 +1,6 @@
 package com.kaiasia.ui;
 
+import com.kaiasia.model.AccountInfo;
 import com.kaiasia.model.UserInfo;
 import com.kaiasia.t24utils.T24UtilsApiClient;
 import org.json.JSONArray;
@@ -19,6 +20,7 @@ import static com.kaiasia.t24utils.T24UtilsApiClient.showAccountDetails;
 public class DashboardPanel extends JPanel {
     private MainFrame mainFrame;
     private JPanel accountPanel;
+    public static AccountInfo accountInfo;
 
     public DashboardPanel(MainFrame mainFrame, UserInfo userInfo) {
         this.mainFrame = mainFrame;
@@ -255,7 +257,7 @@ public class DashboardPanel extends JPanel {
         internalTransfer.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                showInternalTransferScreen();
+                mainFrame.showFunTranferIn();
             }
         });
 

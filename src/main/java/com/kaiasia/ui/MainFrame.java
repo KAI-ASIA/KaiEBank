@@ -30,7 +30,12 @@ public class MainFrame extends JFrame {
         revalidate();
         repaint();
     }
-
+    public void showFunTranferIn(){
+        getContentPane().removeAll();
+        add(new FundTransferInPanel(this)); // Hiển thị trang LoginPanel
+        revalidate();
+        repaint();
+    }
     public void showProfile(UserInfo userInfo) {
         getContentPane().removeAll();
         add(new ProfilePanel(this, userInfo)); // Hiển thị trang ProfilePanel
