@@ -43,13 +43,6 @@ public class MainFrame extends JFrame {
         repaint();
     }
 
-    public void updateUserInfo(UserInfo userInfo) {
-        setCurrentUser(userInfo);
-        if (ProfilePanel != null) {
-            ProfilePanel.updateEmail(userInfo.getEmail()); // Cập nhật email trong ProfilePanel
-        }
-    }
-
     public void showNapasTransferScreen(UserInfo userInfo) {
         if (userInfo == null) {
             System.out.println("DEBUG: userInfo truyền vào null, dùng currentUser trong MainFrame");
@@ -77,6 +70,13 @@ public class MainFrame extends JFrame {
     public void setCurrentUser(UserInfo userInfo) {
         this.currentUser = userInfo;
         System.out.println("DEBUG: Cập nhật currentUser trong MainFrame: " + this.currentUser);
+    }
+
+    public void showInternalTransferScreen(UserInfo userInfo) {
+        getContentPane().removeAll();
+        add(new InternalFundsTransferPanel(this, userInfo)); // Chuyển sang giao diện chuyển tiền nội bộ
+        revalidate();
+        repaint();
     }
 
     public static void main(String[] args) {

@@ -159,24 +159,25 @@ public class LoginPanel extends JPanel {
                 enquiry.optString("username", "N/A"),
                 enquiry.optString("phone", "N/A"),
                 enquiry.optString("sessionId", "N/A"),
-                "N/A"  // Email lấy từ T24
+                enquiry.optString("email", "N/A")
+                //"N/A"  // Email lấy từ T24
         );
 
         // Gọi API T24 để lấy email
-        new Thread(() -> {
-            JSONObject t24Response = T24UtilsApiClient.getCustomerEmailFromT24(customerID);
-            if (t24Response != null && "OK".equals(t24Response.optJSONObject("body").optString("status"))) {
-                JSONObject t24Enquiry = t24Response.optJSONObject("body").optJSONObject("enquiry");
-                String email = t24Enquiry.optString("email", "N/A");
-
-                // Cập nhật email vào userInfo
-                userInfo.setEmail(email);
-                System.out.println("DEBUG: Email từ T24: " + email);
-
-                // Cập nhật giao diện ProfilePanel
-                SwingUtilities.invokeLater(() -> mainFrame.updateUserInfo(userInfo));
-            }
-        }).start();
+//        new Thread(() -> {
+//            JSONObject t24Response = T24UtilsApiClient.getCustomerEmailFromT24(customerID);
+//            if (t24Response != null && "OK".equals(t24Response.optJSONObject("body").optString("status"))) {
+//                JSONObject t24Enquiry = t24Response.optJSONObject("body").optJSONObject("enquiry");
+//                String email = t24Enquiry.optString("email", "N/A");
+//
+//                // Cập nhật email vào userInfo
+//                userInfo.setEmail(email);
+//                System.out.println("DEBUG: Email từ T24: " + email);
+//
+//                // Cập nhật giao diện ProfilePanel
+//                SwingUtilities.invokeLater(() -> mainFrame.updateUserInfo(userInfo));
+//            }
+//        }).start();
 
         // Cập nhật currentUser
         mainFrame.setCurrentUser(userInfo);
