@@ -24,6 +24,9 @@ public class Config {
     //customer API
     public static final String CUSTOMER_API_URL = "http://14.225.254.212:8077/CUSTOMER_API/process";
     public static final String CUSTOMER_API_KEY = "fundstransferh04ng14md3ptr4iv4ilu0n";
+    //Account API
+    public static final String ACCOUNT_API_URL = "http://14.225.254.212:8089/ACCOUNT_API/process";
+    public static final String ACCOUNT_API_KEY = "accountq51klfoni1ezxl5f2ckpfx248";
 
     private Config() {
 

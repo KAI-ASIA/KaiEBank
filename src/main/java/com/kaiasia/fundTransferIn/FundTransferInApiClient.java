@@ -23,7 +23,7 @@ public class FundTransferInApiClient {
 
             // Tạo Body
             JSONObject body = new JSONObject();
-            body.put("command", "GET_ENQUIRY");
+            body.put("command", "GET_TRANSACTION");
 
             // Tạo Enquiry
             JSONObject transaction = new JSONObject();
