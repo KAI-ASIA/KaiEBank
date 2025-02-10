@@ -72,12 +72,12 @@ public class MainFrame extends JFrame {
         System.out.println("DEBUG: Cập nhật currentUser trong MainFrame: " + this.currentUser);
     }
 
-    public void showInternalTransferScreen(UserInfo userInfo) {
-        getContentPane().removeAll();
-        add(new InternalFundsTransferPanel(this, userInfo)); // Chuyển sang giao diện chuyển tiền nội bộ
-        revalidate();
-        repaint();
-    }
+//    public void showInternalTransferScreen(UserInfo userInfo) {
+//        getContentPane().removeAll();
+//        add(new InternalFundsTransferPanel(this, userInfo)); // Chuyển sang giao diện chuyển tiền nội bộ
+//        revalidate();
+//        repaint();
+//    }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {

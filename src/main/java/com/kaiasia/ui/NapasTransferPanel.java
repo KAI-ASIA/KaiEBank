@@ -1,5 +1,8 @@
 package com.kaiasia.ui;
 
+import com.kaiasia.account.AccountApiClient;
+import com.kaiasia.model.Error.ErrorInfo;
+import com.kaiasia.model.NapasInfo;
 import com.kaiasia.model.UserInfo;
 import com.kaiasia.napas.NapasApiClient;
 import com.kaiasia.t24utils.T24UtilsApiClient;
@@ -8,18 +11,30 @@ import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Vector;
 
 public class NapasTransferPanel extends JPanel {
     private JComboBox<String> senderAccountDropdown;
     private JTextField amountField;
     private JTextField benAccField;
     private JTextField transContentField;
+    private JTextField nameBenAccField;
+    private JComboBox<String> bankComboBox;
     private MainFrame mainFrame;
     private UserInfo userInfo;
+    private Vector<String> listBank=new Vector<>();
+    private NapasInfo napasInfo;
 
     public NapasTransferPanel(MainFrame mainFrame, UserInfo userInfo) {
         this.mainFrame = mainFrame;
         this.userInfo = userInfo;
+
+        // call api
+        callT24ApiGetBank();
 
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -47,7 +62,7 @@ public class NapasTransferPanel extends JPanel {
         });
 
         // Panel nhập liệu
-        JPanel inputPanel = new JPanel(new GridLayout(5, 2, 8, 8));
+        JPanel inputPanel = new JPanel(new GridLayout(7, 2, 8, 8));
 
         inputPanel.add(createLabel("Tài khoản gửi:"));
         senderAccountDropdown = new JComboBox<>();
@@ -62,15 +77,54 @@ public class NapasTransferPanel extends JPanel {
         benAccField = createLargeTextField();
         inputPanel.add(benAccField);
 
-        inputPanel.add(createLabel("Ngân hàng:"));
-        JLabel bankLabel = new JLabel("970406 - Vietcombank");
-        bankLabel.setFont(new Font("Arial", Font.BOLD, 16));
-        inputPanel.add(bankLabel);
+        inputPanel.add(createLabel("Tên tài khoản nhận:"));
+        nameBenAccField = createLargeTextField();
+        inputPanel.add(nameBenAccField);
+        nameBenAccField.setEditable(false);
+
+
+
+
+
+// Tạo JComboBox
+        bankComboBox = new JComboBox<>(listBank);
+        bankComboBox.setFont(new Font("Arial", Font.PLAIN, 16));
+
+// Thêm vào panel
+        inputPanel.add(new JLabel("Tên ngân hàng:"));
+        inputPanel.add(bankComboBox);
+
 
         inputPanel.add(createLabel("Nội dung chuyển tiền:"));
         transContentField = createLargeTextField();
         inputPanel.add(transContentField);
 
+        //xử lí khi nhập xong số tài khoản người nhận
+        benAccField.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                //gọi api Napas1
+                String bankId= Arrays.stream(((String)bankComboBox.getSelectedItem()).split(" "))
+                        .findFirst().orElse("");
+               try {
+                   napasInfo=new NapasInfo.Builder()
+                           .senderAccount((String)senderAccountDropdown.getSelectedItem())
+                           .senderName(DashboardPanel.accountInfo.getShortName())
+                           .accountId(benAccField.getText())
+                           .bankId(bankId)
+                           .build();
+               }
+               catch (Exception ex) {
+                   ex.printStackTrace();
+               }
+
+            }
+        });
         // Thêm panel nhập liệu
         gbc.gridy++;
         gbc.gridwidth = 2;
@@ -161,5 +215,70 @@ public class NapasTransferPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Không nhận được phản hồi từ server!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             System.out.println("Giao dịch thất bại! Không có phản hồi từ server.");
         }
+    }
+    private void callT24ApiGetBank(){
+        ErrorInfo error=null;
+        JSONObject response= T24UtilsApiClient.getListBank();
+
+        if (response==null){
+            System.out.println("loi");
+            return ;
+        }
+        JSONObject errorResponse=response.optJSONObject("error");
+        if (error!=null){
+            error=new ErrorInfo(errorResponse.optString("code"),errorResponse.optString("desc"));
+            JOptionPane.showMessageDialog(this, error.getCode()+" : "+error.getDesc(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return ;
+        }
+
+        JSONObject body=response.optJSONObject("body");
+        if(body==null|| !"OK".equals(body.optString("status"))){
+            JOptionPane.showMessageDialog(this,"không thể tìm" , "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return ;
+        }
+
+        JSONObject enquiry=body.optJSONObject("enquiry");
+        if (enquiry==null) {
+            JOptionPane.showMessageDialog(this, "lỗi không tìm danh sach ngan hang", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        System.out.println("đã tìm thấy danh sách ngân hàng");
+        JSONArray banksArray=enquiry.optJSONArray("banks");
+
+        for(int i=0;i<banksArray.length();i++){
+            JSONObject bankObject = banksArray.getJSONObject(i);
+            String bankCode = bankObject.getString("bankCode");
+            String bankName = bankObject.getString("bankName");
+            listBank.add(bankCode + " - " + bankName);
+        }
+
+    }
+    private boolean callApigetInterBankAccount(){
+        ErrorInfo error=null;
+        JSONObject response= NapasApiClient.getInterBankAccount(napasInfo);
+
+        if (response==null){
+            System.out.println("loi");
+            return false;
+        }
+        JSONObject errorResponse=response.optJSONObject("error");
+        if (error!=null){
+            error=new ErrorInfo(errorResponse.optString("code"),errorResponse.optString("desc"));
+            JOptionPane.showMessageDialog(this, error.getCode()+" : "+error.getDesc(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        JSONObject body=response.optJSONObject("body");
+        if(body==null|| !"OK".equals(body.optString("status"))){
+            JOptionPane.showMessageDialog(this,"không thể tìm" , "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        JSONObject enquiry=body.optJSONObject("enquiry");
+        if (enquiry==null) {
+            JOptionPane.showMessageDialog(this, "lỗi không tìm ", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        return true;
     }
 }

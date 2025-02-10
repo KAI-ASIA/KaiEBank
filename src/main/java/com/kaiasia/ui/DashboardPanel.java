@@ -284,7 +284,7 @@ public class DashboardPanel extends JPanel {
     }
 
     // Hiển thị giao diện chuyển tiền nội bộ
-    private void showInternalTransferScreen() {
-        mainFrame.showInternalTransferScreen(mainFrame.getCurrentUser());
-    }
+//    private void showInternalTransferScreen() {
+//        mainFrame.showInternalTransferScreen(mainFrame.getCurrentUser());
+//    }
 }

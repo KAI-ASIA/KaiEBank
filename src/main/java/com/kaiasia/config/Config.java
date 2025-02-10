@@ -17,6 +17,14 @@ public class Config {
     public static final String EBANK_API_URL = "http://14.225.254.212:8077/EBANK_API/process";
     public static final String EBANK_API_KEY = "custinfoq51klfoni1ezxl5f2ckpfx671";
 
+    //FundTransfer
+    public static final String FUNDTRANSFERIN_API_URL = "http://14.225.254.212:8025/FUNDS_TRANSFER_API/process";
+    public static final String FUNDTRANSFERIN_API_KEY = "fundstransferh04ng14md3ptr4iv4ilu0n";
+
+    //customer API
+    public static final String CUSTOMER_API_URL = "http://14.225.254.212:8077/CUSTOMER_API/process";
+    public static final String CUSTOMER_API_KEY = "fundstransferh04ng14md3ptr4iv4ilu0n";
+
     private Config() {
 
     }

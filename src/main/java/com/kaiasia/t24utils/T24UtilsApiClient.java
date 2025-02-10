@@ -5,6 +5,7 @@ import com.kaiasia.util.HttpUtils;
 import org.json.JSONObject;
 
 import javax.swing.*;
+import java.security.PublicKey;
 
 public class T24UtilsApiClient {
 
@@ -105,6 +106,26 @@ public class T24UtilsApiClient {
             String response = HttpUtils.postJson(Config.T24_UTIL_API_URL, requestJson.toString());
             return new JSONObject(response);
         } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+    public static JSONObject getListBank(){
+        try {
+            JSONObject requestJson = new JSONObject();
+            requestJson.put("header", createHeader());
+            JSONObject body = new JSONObject();
+            body.put("command", "GET_ENQUIRY");
+            JSONObject enquiry = new JSONObject();
+            enquiry.put("authenType", "KAI.API.BANKS");
+            enquiry.put("bankCode", "");
+
+            body.put("enquiry", enquiry);
+            requestJson.put("body", body);
+            String response = HttpUtils.postJson(Config.T24_UTIL_API_URL, requestJson.toString());
+            return new JSONObject(response);
+        }
+        catch (Exception ex) {
             ex.printStackTrace();
             return null;
         }

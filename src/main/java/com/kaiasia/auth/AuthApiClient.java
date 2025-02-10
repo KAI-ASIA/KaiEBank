@@ -206,6 +206,12 @@ public class AuthApiClient {
         }
     }
 
+    //confirm OTP
+    public static JSONObject confirmOtp(){
+
+        return null;
+    }
+
 //    // GET_OTP với email riêng của từng customer
 //    public static JSONObject getOtp() {
 //        try {
