@@ -2,11 +2,15 @@ package com.kaiasia.t24utils;
 
 import com.kaiasia.config.Config;
 import com.kaiasia.util.HttpUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class T24UtilsApiClient {
+    private static List<String> interbankList = new ArrayList<>();
 
     private static JSONObject createHeader() {
         JSONObject header = new JSONObject();
@@ -86,8 +90,9 @@ public class T24UtilsApiClient {
         }
     }
 
-    //KAI.API.CUST.GET.INFO
-    public static JSONObject getCustomerEmailFromT24(String customerId) {
+    // Gọi API lấy danh sách ngân hàng
+    public static void loadInterbankList() {
+        interbankList.clear();
         try {
             JSONObject requestJson = new JSONObject();
             requestJson.put("header", createHeader());
@@ -96,18 +101,31 @@ public class T24UtilsApiClient {
             body.put("command", "GET_ENQUIRY");
 
             JSONObject enquiry = new JSONObject();
-            enquiry.put("authenType", "KAI.API.CUST.GET.INFO");
-            enquiry.put("customerId", customerId);
+            enquiry.put("authenType", "KAI.API.BANKS");
+            enquiry.put("bankCode", "");
             body.put("enquiry", enquiry);
 
             requestJson.put("body", body);
 
             String response = HttpUtils.postJson(Config.T24_UTIL_API_URL, requestJson.toString());
-            return new JSONObject(response);
+            JSONObject responseJson = new JSONObject(response);
+
+            if (responseJson != null && responseJson.getJSONObject("body").getString("status").equals("OK")) {
+                JSONArray banks = responseJson.getJSONObject("body").getJSONObject("enquiry").getJSONArray("banks");
+
+                for (int i = 0; i < banks.length(); i++) {
+                    JSONObject bank = banks.getJSONObject(i);
+                    String bankInfo = bank.getString("bankCode") + " - " + bank.getString("bankName");
+                    interbankList.add(bankInfo);
+                }
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
-            return null;
         }
     }
 
+    // Lấy danh sách ngân hàng
+    public static List<String> getCachedInterbankList() {
+        return interbankList;
+    }
 }

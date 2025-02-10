@@ -5,7 +5,6 @@ import javax.swing.*;
 
 public class MainFrame extends JFrame {
     private static UserInfo currentUser;
-    private ProfilePanel ProfilePanel;
 
     public MainFrame() {
         super("E-Bank Application");
@@ -67,9 +66,9 @@ public class MainFrame extends JFrame {
         System.out.println("DEBUG: Cập nhật currentUser trong MainFrame: " + this.currentUser);
     }
 
-    public void showInternalTransferScreen(UserInfo userInfo) {
+    public void showTransferScreen(UserInfo userInfo) {
         getContentPane().removeAll();
-        add(new InternalFundsTransferPanel(this, userInfo)); // Chuyển sang giao diện chuyển tiền nội bộ
+        add(new FundsTransferPanel(this, userInfo)); // Hiển thị trang FundsTransferPanel
         revalidate();
         repaint();
     }

@@ -1,7 +1,6 @@
 package com.kaiasia.ui;
 
 import com.kaiasia.auth.AuthApiClient;
-import com.kaiasia.t24utils.T24UtilsApiClient;
 import com.kaiasia.model.UserInfo;
 import org.json.JSONObject;
 
@@ -121,8 +120,6 @@ public class LoginPanel extends JPanel {
             return;
         }
 
-        System.out.println("API Response: " + jsonResponse.toString(4));
-
         // Kiểm tra lỗi từ API
         JSONObject error = jsonResponse.optJSONObject("error");
         if (error != null) {
@@ -159,24 +156,7 @@ public class LoginPanel extends JPanel {
                 enquiry.optString("phone", "N/A"),
                 enquiry.optString("sessionId", "N/A"),
                 enquiry.optString("email", "N/A")
-                //"N/A"  // Email lấy từ T24
         );
-
-        // Gọi API T24 để lấy email
-//        new Thread(() -> {
-//            JSONObject t24Response = T24UtilsApiClient.getCustomerEmailFromT24(customerID);
-//            if (t24Response != null && "OK".equals(t24Response.optJSONObject("body").optString("status"))) {
-//                JSONObject t24Enquiry = t24Response.optJSONObject("body").optJSONObject("enquiry");
-//                String email = t24Enquiry.optString("email", "N/A");
-//
-//                // Cập nhật email vào userInfo
-//                userInfo.setEmail(email);
-//                System.out.println("DEBUG: Email từ T24: " + email);
-//
-//                // Cập nhật giao diện ProfilePanel
-//                SwingUtilities.invokeLater(() -> mainFrame.updateUserInfo(userInfo));
-//            }
-//        }).start();
 
         // Cập nhật currentUser
         mainFrame.setCurrentUser(userInfo);
@@ -209,5 +189,4 @@ public class LoginPanel extends JPanel {
 
         mainFrame.showDashboard();
     }
-
 }

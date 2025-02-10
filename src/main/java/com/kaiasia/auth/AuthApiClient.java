@@ -3,6 +3,7 @@ package com.kaiasia.auth;
 import com.kaiasia.config.Config;
 import com.kaiasia.customer.CustomerApiClient;
 import com.kaiasia.model.UserInfo;
+import com.kaiasia.t24utils.T24UtilsApiClient;
 import com.kaiasia.ui.MainFrame;
 import com.kaiasia.util.HttpUtils;
 import org.json.JSONObject;
@@ -79,6 +80,7 @@ public class AuthApiClient {
                 sessionId = enquiryResponse.getString("sessionId");
                 AuthApiClient.username = username;
                 AuthApiClient.userEmail = enquiryResponse.optString("gmail", "");
+                T24UtilsApiClient.loadInterbankList();
             }
 
             return jsonResponse;

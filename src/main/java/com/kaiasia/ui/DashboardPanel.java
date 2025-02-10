@@ -237,7 +237,7 @@ public class DashboardPanel extends JPanel {
         Dimension buttonSize = new Dimension(button.getWidth(), button.getHeight() / 2);
 
         // Tạo nút Chuyển tiền nội bộ
-        JButton internalTransfer = new JButton("Chuyển tiền nội bộ");
+        JButton internalTransfer = new JButton("Chuyển tiền thường");
         internalTransfer.setPreferredSize(buttonSize);
         internalTransfer.setFont(new Font("Arial", Font.BOLD, 16));
         internalTransfer.setMargin(new Insets(10, 10, 10, 10));
@@ -250,11 +250,11 @@ public class DashboardPanel extends JPanel {
         napasTransfer.setMargin(new Insets(10, 10, 10, 10));
         napasTransfer.setFocusPainted(false);
 
-        // Sự kiện khi chọn Chuyển tiền nội bộ
+        // Sự kiện khi chọn Chuyển tiền thường
         internalTransfer.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                showInternalTransferScreen();
+                showTransferScreen();
             }
         });
 
@@ -281,8 +281,8 @@ public class DashboardPanel extends JPanel {
         transferMenu.show(button, 0, button.getHeight());
     }
 
-    // Hiển thị giao diện chuyển tiền nội bộ
-    private void showInternalTransferScreen() {
-        mainFrame.showInternalTransferScreen(mainFrame.getCurrentUser());
+    // Hiển thị giao diện chuyển tiền thường
+    private void showTransferScreen() {
+        mainFrame.showTransferScreen(mainFrame.getCurrentUser());
     }
 }

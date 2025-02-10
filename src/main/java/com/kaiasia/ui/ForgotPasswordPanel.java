@@ -156,7 +156,6 @@ public class ForgotPasswordPanel extends JPanel {
 
         // Debug: Kiểm tra giá trị resetCode trước khi gửi API
         System.out.println("Reset Code nhập từ UI: " + resetCode);
-
         JSONObject response = AuthApiClient.resetPassword(username, resetCode, newPassword);
 
         if (response == null) {

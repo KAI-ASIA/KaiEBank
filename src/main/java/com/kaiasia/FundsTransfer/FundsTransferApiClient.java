@@ -20,11 +20,11 @@ public class FundsTransferApiClient {
     }
 
     public static JSONObject transferFunds(String sessionId, String customerID, String otp,
-                                           String debitAccount, String creditAccount,
-                                           String transAmount, String transDesc) {
+                                           String debitAccount, String creditAccount, String bankId,
+                                           String transAmount, String transDesc, boolean isInterbank) {
         try {
             JSONObject transaction = new JSONObject();
-            transaction.put("authenType", "KAI.API.FT.IN");
+            transaction.put("authenType", isInterbank ? "KAI.API.FT.OUT" : "KAI.API.FT.IN");
             transaction.put("sessionId", sessionId);
             transaction.put("customerID", customerID);
             transaction.put("company", "VN0010001");
@@ -32,7 +32,7 @@ public class FundsTransferApiClient {
             transaction.put("transactionId", System.currentTimeMillis()); // Tạo transactionId duy nhất
             transaction.put("debitAccount", debitAccount);
             transaction.put("creditAccount", creditAccount);
-            transaction.put("bankId", "300");
+            transaction.put("bankId", isInterbank ? bankId : "300"); // 300 là mã nội bộ
             transaction.put("transAmount", transAmount);
             transaction.put("transDesc", transDesc);
 
