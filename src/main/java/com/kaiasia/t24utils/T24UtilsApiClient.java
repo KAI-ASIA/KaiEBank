@@ -21,30 +21,6 @@ public class T24UtilsApiClient {
         return header;
     }
 
-//    public static JSONObject login(String username, String password) {
-//        try {
-//            JSONObject requestJson = new JSONObject();
-//            requestJson.put("header", createHeader());
-//
-//            JSONObject body = new JSONObject();
-//            body.put("command", "GET_ENQUIRY");
-//
-//            JSONObject enquiry = new JSONObject();
-//            enquiry.put("authenType", "KAI.API.AUTHEN.GET.LOGIN");
-//            enquiry.put("username", username);
-//            enquiry.put("password", password);
-//            body.put("enquiry", enquiry);
-//
-//            requestJson.put("body", body);
-//
-//            String response = HttpUtils.postJson(Config.T24_UTIL_API_URL, requestJson.toString());
-//            return new JSONObject(response);
-//        } catch (Exception ex) {
-//            ex.printStackTrace();
-//            return null;
-//        }
-//    }
-
     //KAI.API.CUSTOMER.GET.ACC
     public static JSONObject getCustomerAccounts(String customerId) {
         try {

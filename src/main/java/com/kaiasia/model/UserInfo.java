@@ -38,10 +38,6 @@ public class UserInfo {
         return phone;
     }
 
-    public String getEmail() { return email; }
-
-    public void setEmail(String email) { this.email = email;}
-
     public void clearSession() {
         this.sessionId = null;
         System.out.println("Session đã được xoá!");

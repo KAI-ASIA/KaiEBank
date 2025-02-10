@@ -1,6 +1,9 @@
 package com.kaiasia.auth;
 
 import com.kaiasia.config.Config;
+import com.kaiasia.customer.CustomerApiClient;
+import com.kaiasia.model.UserInfo;
+import com.kaiasia.ui.MainFrame;
 import com.kaiasia.util.HttpUtils;
 import org.json.JSONObject;
 
@@ -203,7 +206,7 @@ public class AuthApiClient {
         }
     }
 
-//    // GET_OTP với email riêng của từng tài khoản
+//    // GET_OTP với email riêng của từng customer
 //    public static JSONObject getOtp() {
 //        try {
 //            if (sessionId == null || username == null) {
@@ -211,24 +214,20 @@ public class AuthApiClient {
 //                return null;
 //            }
 //
-//            // Kiểm tra userEmail trước khi gửi
-//            if (userEmail == null || userEmail.trim().isEmpty()) {
-//                System.err.println("Lỗi: userEmail null hoặc rỗng! Đang cập nhật lại từ currentUser");
-//
-//                // Lấy email từ currentUser nếu có
-//                UserInfo currentUser = MainFrame.getCurrentUser();
-//                if (currentUser != null) {
-//                    userEmail = currentUser.getEmail();
-//                }
+//            // Lấy email từ CUSTOMER_API
+//            String email = fetchEmailFromCustomerApi();
+//            if (email == null || email.trim().isEmpty()) {
+//                System.err.println("Lỗi: Không thể lấy email từ CUSTOMER_API. OTP không thể được gửi!");
+//                return null;
 //            }
 //
-//            System.out.println("DEBUG: Gửi request lấy OTP với email: " + userEmail);
+//            System.out.println("DEBUG: Gửi request lấy OTP với email: " + email);
 //
 //            JSONObject enquiry = new JSONObject();
 //            enquiry.put("authenType", "getOTP");
 //            enquiry.put("sessionId", sessionId);
 //            enquiry.put("username", username);
-//            enquiry.put("gmail", userEmail);
+//            enquiry.put("gmail", email);
 //            enquiry.put("transTime", System.currentTimeMillis());
 //            enquiry.put("transId", "AUTHEN-getOTP-" + System.currentTimeMillis());
 //            enquiry.put("transInfo", "Giao dịch lấy mã OTP");
@@ -248,6 +247,34 @@ public class AuthApiClient {
 //        }
 //    }
 
+    // Lấy email từ CUSTOMER_API (dùng cho GET_OTP theo mail riêng của từng customer)
+    private static String fetchEmailFromCustomerApi() {
+        try {
+            UserInfo currentUser = MainFrame.getCurrentUser();
+            if (currentUser == null || currentUser.getSessionId() == null || currentUser.getCustomerID() == null) {
+                System.err.println("Lỗi: Không thể lấy email, thông tin người dùng null!");
+                return null;
+            }
+
+            JSONObject response = CustomerApiClient.getCustomerInfo(currentUser.getSessionId(), currentUser.getCustomerID());
+
+            if (response != null && response.optJSONObject("body") != null) {
+                JSONObject body = response.optJSONObject("body");
+                JSONObject enquiry = body.optJSONObject("enquiry");
+
+                if (enquiry != null) {
+                    return enquiry.optString("email", null);
+                }
+            }
+
+            System.err.println("Lỗi: Không tìm thấy email trong CUSTOMER_API!");
+            return null;
+
+        } catch (Exception e) {
+            System.err.println("Lỗi khi gọi CUSTOMER_API để lấy email: " + e.getMessage());
+            return null;
+        }
+    }
 
     // REQUEST_RESET_CODE
     public static JSONObject requestResetCode(String username) {

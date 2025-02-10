@@ -1,8 +1,8 @@
 package com.kaiasia.ui;
 
+import com.kaiasia.customer.CustomerApiClient;
 import com.kaiasia.auth.AuthApiClient;
 import com.kaiasia.model.UserInfo;
-import javafx.scene.control.Labeled;
 import org.json.JSONObject;
 
 import javax.swing.*;
@@ -11,6 +11,13 @@ import java.awt.*;
 public class ProfilePanel extends JPanel {
     private MainFrame mainFrame;
     private UserInfo userInfo;
+
+    private JLabel lblName;
+    private JLabel lblCustomerID;
+    private JLabel lblPhone;
+    private JLabel lblEmail;
+    private JLabel lblUsername;
+    private JLabel lblAdress;
 
     public ProfilePanel(MainFrame mainFrame, UserInfo userInfo) {
         this.mainFrame = mainFrame;
@@ -27,23 +34,27 @@ public class ProfilePanel extends JPanel {
         gbc.gridy = 0;
         add(lblTitle, gbc);
 
-        JLabel lblName = new JLabel("Họ và tên: " + userInfo.getCustomerName());
+        lblName = new JLabel("Họ và tên: ");
         gbc.gridy++;
         add(lblName, gbc);
 
-        JLabel lblCustomerID = new JLabel("Mã khách hàng: " + userInfo.getCustomerID());
+        lblCustomerID = new JLabel("Mã khách hàng: " + userInfo.getCustomerID());
         gbc.gridy++;
         add(lblCustomerID, gbc);
 
-        JLabel lblPhone = new JLabel("Số điện thoại: " + userInfo.getPhone());
+        lblPhone = new JLabel("Số điện thoại: ");
         gbc.gridy++;
         add(lblPhone, gbc);
 
-        JLabel lblEmail = new JLabel("Email: " + userInfo.getEmail());
+        lblEmail = new JLabel("Email: ");
         gbc.gridy++;
         add(lblEmail, gbc);
 
-        JLabel lblUsername = new JLabel("Username: " + userInfo.getUsername());
+        lblAdress = new JLabel("Địa chỉ: ");
+        gbc.gridy++;
+        add(lblAdress, gbc);
+
+        lblUsername = new JLabel("Username: " + userInfo.getUsername());
         gbc.gridy++;
         add(lblUsername, gbc);
 
@@ -51,17 +62,40 @@ public class ProfilePanel extends JPanel {
         gbc.gridy++;
         add(btnChangePassword, gbc);
 
-        JButton btnGetOtp = new JButton("Lấy OTP");
-        gbc.gridy++;
-        add(btnGetOtp, gbc);
-
         JButton btnBack = new JButton("Quay lại");
         gbc.gridy++;
         add(btnBack, gbc);
 
-        btnChangePassword.addActionListener(e -> showChangePasswordDialog()); // Gọi dialog đổi mật khẩu
-        btnGetOtp.addActionListener(e -> handleGetOtp()); // Gọi hàm xử lý lấy OTP
+        btnChangePassword.addActionListener(e -> showChangePasswordDialog());
         btnBack.addActionListener(e -> mainFrame.showDashboard());
+
+        // Gọi API để cập nhật thông tin khách hàng từ CUSTOMER_API
+        loadCustomerInfo();
+    }
+
+    private void loadCustomerInfo() {
+        if (userInfo == null || userInfo.getSessionId() == null || userInfo.getCustomerID() == null) {
+            JOptionPane.showMessageDialog(this, "Không tìm thấy thông tin khách hàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        JSONObject response = CustomerApiClient.getCustomerInfo(userInfo.getSessionId(), userInfo.getCustomerID());
+
+        if (response != null && response.optJSONObject("body") != null) {
+            JSONObject body = response.optJSONObject("body");
+            JSONObject enquiry = body.optJSONObject("enquiry");
+
+            if (enquiry != null) {
+                lblName.setText("Họ và tên: " + enquiry.optString("customerName", "Không có dữ liệu"));
+                lblPhone.setText("Số điện thoại: " + enquiry.optString("phone", "Không có dữ liệu"));
+                lblEmail.setText("Email: " + enquiry.optString("email", "Không có dữ liệu"));
+                lblAdress.setText("Địa chỉ: " + enquiry.optString("address", "Không có dữ liệu"));
+            } else {
+                JOptionPane.showMessageDialog(this, "Không lấy được dữ liệu khách hàng!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            JOptionPane.showMessageDialog(this, "Lỗi hệ thống khi gọi CUSTOMER_API!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void showChangePasswordDialog() {
@@ -138,32 +172,5 @@ public class ProfilePanel extends JPanel {
 
         changePassDialog.setLocationRelativeTo(this);
         changePassDialog.setVisible(true);
-    }
-
-    private void handleGetOtp() {
-        JSONObject response = AuthApiClient.getOtp();
-
-        if (response == null) {
-            JOptionPane.showMessageDialog(this, "Lỗi hệ thống, vui lòng thử lại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        if (response.has("error")) {
-            String errorDesc = response.getJSONObject("error").optString("desc", "Không lấy được OTP!");
-            JOptionPane.showMessageDialog(this, "Lỗi: " + errorDesc, "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        JSONObject body = response.optJSONObject("body");
-        if (body != null && "OK".equals(body.optString("status"))) {
-            JOptionPane.showMessageDialog(this, "Vui lòng kiểm tra email để nhận mã xác thực ", "OTP", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            JOptionPane.showMessageDialog(this, "Lấy OTP thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-
-    public void updateEmail(String email) {
-        Labeled lblEmail = null;
-        lblEmail.setText("Email: " + (email != null ? email : "N/A"));
     }
 }

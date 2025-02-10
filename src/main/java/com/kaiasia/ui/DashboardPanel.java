@@ -57,7 +57,6 @@ public class DashboardPanel extends JPanel {
             }
         });
 
-
         btnLogout.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -284,7 +283,6 @@ public class DashboardPanel extends JPanel {
 
     // Hiển thị giao diện chuyển tiền nội bộ
     private void showInternalTransferScreen() {
-        JOptionPane.showMessageDialog(this, "Chuyển tiền nội bộ!", "Chuyển Tiền", JOptionPane.INFORMATION_MESSAGE);
+        mainFrame.showInternalTransferScreen(mainFrame.getCurrentUser());
     }
-
 }
