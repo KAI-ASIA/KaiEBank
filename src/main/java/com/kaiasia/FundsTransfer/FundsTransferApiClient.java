@@ -1,5 +1,6 @@
 package com.kaiasia.FundsTransfer;
 
+import com.kaiasia.napas.NapasApiClient;
 import com.kaiasia.util.HttpUtils;
 import org.json.JSONObject;
 import com.kaiasia.config.Config;
@@ -23,16 +24,28 @@ public class FundsTransferApiClient {
                                            String debitAccount, String creditAccount, String bankId,
                                            String transAmount, String transDesc, boolean isInterbank) {
         try {
+            if ("304".equals(bankId)) {
+                System.out.println("Đổi BankID từ 304 thành NapasID 970406");
+                bankId = "970406";
+            }
+
+            // Kiểm tra nếu là Napas (970406) và account 001 thì gọi NapasAPI
+            if ("970406".equals(bankId) && "001".equals(creditAccount)) {
+                System.out.println("Giao dịch sẽ được chuyển qua Napas");
+                return NapasApiClient.transfer(debitAccount, transAmount, creditAccount, bankId, transDesc);
+            }
+
+            // Nếu không, xử lý chuyển tiền bình thường
             JSONObject transaction = new JSONObject();
             transaction.put("authenType", isInterbank ? "KAI.API.FT.OUT" : "KAI.API.FT.IN");
             transaction.put("sessionId", sessionId);
             transaction.put("customerID", customerID);
             transaction.put("company", "VN0010001");
             transaction.put("OTP", otp);
-            transaction.put("transactionId", System.currentTimeMillis()); // Tạo transactionId duy nhất
+            transaction.put("transactionId", System.currentTimeMillis());
             transaction.put("debitAccount", debitAccount);
             transaction.put("creditAccount", creditAccount);
-            transaction.put("bankId", isInterbank ? bankId : "300"); // 300 là mã nội bộ
+            transaction.put("bankId", isInterbank ? bankId : "300"); // "300" là mã nội bộ
             transaction.put("transAmount", transAmount);
             transaction.put("transDesc", transDesc);
 
@@ -56,4 +69,5 @@ public class FundsTransferApiClient {
             return null;
         }
     }
+
 }

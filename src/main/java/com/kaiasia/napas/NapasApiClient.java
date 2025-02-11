@@ -37,6 +37,8 @@ public class NapasApiClient {
             requestJson.put("header", header);
             requestJson.put("body", body);
 
+            System.out.println("Gửi request chuyển tiền: " + requestJson.toString(4));
+
             String response = HttpUtils.postJson(Config.NAPAS_API_URL, requestJson.toString());  // Lấy URL từ Config
 
             return new JSONObject(response);

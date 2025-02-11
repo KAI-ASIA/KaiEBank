@@ -37,26 +37,6 @@ public class MainFrame extends JFrame {
         repaint();
     }
 
-    public void showNapasTransferScreen(UserInfo userInfo) {
-        if (userInfo == null) {
-            System.out.println("DEBUG: userInfo truyền vào null, dùng currentUser trong MainFrame");
-            userInfo = this.currentUser;
-        }
-
-        if (userInfo == null || userInfo.getCustomerID() == null || userInfo.getCustomerID().isEmpty()) {
-            System.out.println("LỖI: UserInfo không hợp lệ khi mở Napas Transfer! currentUser = " + userInfo);
-            JOptionPane.showMessageDialog(this, "Không thể mở Napas Transfer, UserInfo không hợp lệ!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        System.out.println("UserInfo hợp lệ! Mở Napas Transfer");
-
-        getContentPane().removeAll();
-        add(new NapasTransferPanel(this, userInfo)); // Hiển thị trang NapasTransferPanel
-        revalidate();
-        repaint();
-    }
-
     public static UserInfo getCurrentUser() {
         return currentUser;
     }

@@ -53,7 +53,7 @@ public class DashboardPanel extends JPanel {
         btnTransfer.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                showTransferOptions(btnTransfer);
+                mainFrame.showTransferScreen(mainFrame.getCurrentUser());
             }
         });
 
@@ -113,7 +113,7 @@ public class DashboardPanel extends JPanel {
         add(mainContent, BorderLayout.CENTER);
     }
 
-    private JPanel createAccountPanel(String title, String accountNumber, String currency, String balance) {
+    private JPanel createAccountPanel(String title, String accountNumber, String currency, String balance, String accountId) {
         // Panel chính
         JPanel panel = new JPanel(new BorderLayout(20, 0));
         panel.setBackground(new Color(240, 247, 255));
@@ -160,7 +160,7 @@ public class DashboardPanel extends JPanel {
         btnDetail.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                showAccountDetails(accountNumber);
+                showAccountDetails(accountId);
             }
         });
 
@@ -201,9 +201,10 @@ public class DashboardPanel extends JPanel {
 
                     JPanel accountItemPanel = createAccountPanel(
                             detail.optString("shortTitle", "Tài khoản thanh toán"),
-                            detail.optString("accountId", "N/A"),
+                            detail.optString("altAccount", "N/A"),
                             detail.optString("currency", "VND"),
-                            detail.optString("avaiBalance", "0")
+                            detail.optString("avaiBalance", "0"),
+                            detail.optString("accountId", "N/A")
                     );
                     accountListPanel.add(accountItemPanel);
 
@@ -224,65 +225,5 @@ public class DashboardPanel extends JPanel {
 
         revalidate();
         repaint();
-    }
-
-    private void showTransferOptions(JButton button) {
-        JPopupMenu transferMenu = new JPopupMenu();
-
-        // Panel chứa hai nút
-        JPanel menuPanel = new JPanel();
-        menuPanel.setLayout(new GridLayout(2, 1, 10, 10));
-        menuPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-
-        Dimension buttonSize = new Dimension(button.getWidth(), button.getHeight() / 2);
-
-        // Tạo nút Chuyển tiền nội bộ
-        JButton internalTransfer = new JButton("Chuyển tiền thường");
-        internalTransfer.setPreferredSize(buttonSize);
-        internalTransfer.setFont(new Font("Arial", Font.BOLD, 16));
-        internalTransfer.setMargin(new Insets(10, 10, 10, 10));
-        internalTransfer.setFocusPainted(false);
-
-        // Tạo nút Chuyển tiền Napas
-        JButton napasTransfer = new JButton("Chuyển tiền Napas");
-        napasTransfer.setPreferredSize(buttonSize);
-        napasTransfer.setFont(new Font("Arial", Font.BOLD, 16));
-        napasTransfer.setMargin(new Insets(10, 10, 10, 10));
-        napasTransfer.setFocusPainted(false);
-
-        // Sự kiện khi chọn Chuyển tiền thường
-        internalTransfer.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                showTransferScreen();
-            }
-        });
-
-        // Sự kiện khi chọn Chuyển tiền Napas
-        napasTransfer.addActionListener(e -> {
-            System.out.println("DEBUG: Gọi showNapasTransferScreen với userInfo: " + mainFrame.getCurrentUser());
-            mainFrame.showNapasTransferScreen(mainFrame.getCurrentUser());
-        });
-
-        // Thêm hai nút vào panel
-        menuPanel.add(internalTransfer);
-        menuPanel.add(napasTransfer);
-
-        // Đóng menu khi bấm vào nút
-        internalTransfer.addActionListener(e -> transferMenu.setVisible(false));
-        napasTransfer.addActionListener(e -> transferMenu.setVisible(false));
-
-        // Định dạng menu
-        transferMenu.setLayout(new BorderLayout());
-        transferMenu.add(menuPanel, BorderLayout.CENTER);
-        transferMenu.setPreferredSize(new Dimension(buttonSize.width + 20, buttonSize.height * 2 + 20));
-
-        // Hiển thị menu ngay dưới nút
-        transferMenu.show(button, 0, button.getHeight());
-    }
-
-    // Hiển thị giao diện chuyển tiền thường
-    private void showTransferScreen() {
-        mainFrame.showTransferScreen(mainFrame.getCurrentUser());
     }
 }
