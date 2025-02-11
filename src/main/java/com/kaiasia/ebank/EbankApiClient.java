@@ -1,6 +1,7 @@
 package com.kaiasia.ebank;
 
 import com.kaiasia.config.Config;
+import com.kaiasia.model.UserInfo;
 import com.kaiasia.util.HttpUtils;
 import org.json.JSONObject;
 
@@ -19,14 +20,8 @@ public class EbankApiClient {
         return header;
     }
 
-    public static JSONObject getCustomerAccount(String sessionId, String userId) {
+    public static JSONObject getAccountEbank(UserInfo userInfo) {
         try {
-            if (sessionId == null || userId == null) {
-                System.out.println("ERROR: sessionId hoặc userId là null!");
-                return null;
-            }
-
-            System.out.println("DEBUG: Gửi request getCustomerAccount với sessionId = " + sessionId + ", userId = " + userId);
 
             JSONObject requestJson = new JSONObject();
             JSONObject header = new JSONObject();
@@ -46,8 +41,8 @@ public class EbankApiClient {
 
             JSONObject enquiry = new JSONObject();
             enquiry.put("authenType", "getUSER_PROFILE");
-            enquiry.put("sessionId", sessionId);
-            enquiry.put("userID", userId);
+            enquiry.put("sessionId", userInfo.getSessionId());
+            enquiry.put("userID", userInfo.getUsername());
 
             body.put("enquiry", enquiry);
             requestJson.put("body", body);

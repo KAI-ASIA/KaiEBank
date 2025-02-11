@@ -114,7 +114,7 @@ public class NapasTransferPanel extends JPanel {
                try {
                    napasInfo=new NapasInfo.Builder()
                            .senderAccount((String)senderAccountDropdown.getSelectedItem())
-                           .senderName(DashboardPanel.accountInfo.getShortName())
+                           .senderName(LoginPanel.ebankInfo.getName())
                            .accountId(benAccField.getText())
                            .bankId(bankId)
                            .build();

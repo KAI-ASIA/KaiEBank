@@ -147,16 +147,18 @@ public class FundTransferInPanel extends JPanel {
                         "Lỗi", JOptionPane.WARNING_MESSAGE);
                 return;
             }
+            // nếu xác nhận otp thành công thì call api chuyển tiền
             if(callApiConfirmOtp()){
                 transferIn = new TransferIn.TransferBuilder()
                     .setCreditAccount(creditAccount.getText())
-                    .setDebitAccount(DashboardPanel.accountInfo.getAccountID())
+                    .setDebitAccount(LoginPanel.ebankInfo.getMainAccount())
                     .setAmount(Integer.parseInt(transAmount.getText()))
                     .setSessionId(LoginPanel.userInfoShare.getSessionId())
-                    .setCustomerID(DashboardPanel.accountInfo.getCustomerID())
+                    .setCustomerID(LoginPanel.ebankInfo.getCustomerId())
                     .setDesc(transDesc.getText())
                         .setOtp(otpField.getText())
                     .build();
+
                 callFundTransferIn();
             }
 

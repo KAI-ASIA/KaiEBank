@@ -1,6 +1,10 @@
 package com.kaiasia.ui;
 
+import com.kaiasia.account.AccountApiClient;
 import com.kaiasia.auth.AuthApiClient;
+import com.kaiasia.ebank.EbankApiClient;
+import com.kaiasia.model.EbankInfo;
+import com.kaiasia.model.Error.ErrorInfo;
 import com.kaiasia.t24utils.T24UtilsApiClient;
 import com.kaiasia.model.UserInfo;
 import org.json.JSONObject;
@@ -17,6 +21,7 @@ public class LoginPanel extends JPanel {
     private JLabel lblForgotPassword;
     private MainFrame mainFrame;
     public static UserInfo userInfoShare;
+    public static EbankInfo ebankInfo;
 
     public LoginPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -162,6 +167,15 @@ public class LoginPanel extends JPanel {
                 enquiry.optString("email", "N/A")
                 //"N/A"  // Email lấy từ T24
         );
+        userInfoShare=userInfo;
+
+        //call API ebank để lấy thông tin tài khoản
+//        if(callApiGetAccountEbank()){
+//            //call api account
+//
+//        }
+
+
 
         // Gọi API T24 để lấy email
 //        new Thread(() -> {
@@ -209,6 +223,58 @@ public class LoginPanel extends JPanel {
         System.out.println("DEBUG: userInfo sau khi login: " + userInfo);
 
         mainFrame.showDashboard();
+    }
+
+    private boolean callApiGetAccountEbank(){
+        ErrorInfo error=null;
+        JSONObject response= EbankApiClient.getAccountEbank(userInfoShare);
+        if (response==null){
+            System.out.println("loi");
+            return false;
+        }
+        JSONObject errorResponse=response.optJSONObject("error");
+        if (error!=null){
+            error=new ErrorInfo(errorResponse.optString("code"),errorResponse.optString("desc"));
+            JOptionPane.showMessageDialog(this, error.getCode()+" : "+error.getDesc(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        JSONObject body=response.optJSONObject("body");
+        if(body==null|| !"OK".equals(body.optString("status"))){
+            JOptionPane.showMessageDialog(this,"không thể tìm" , "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        JSONObject enquiry=body.optJSONObject("enquiry");
+        if (enquiry==null) {
+            JOptionPane.showMessageDialog(this, "lỗi không tìm được thông tin tài khoản", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        System.out.println("đã tìm được thông tin tài khoản");
+        System.out.println(response.toString(4));
+
+        ebankInfo=new EbankInfo.Builder()
+                .setCustomerId(enquiry.optString("customerID"))
+                .setResponseCode(enquiry.optString("responseCode"))
+                .setCustomerType(enquiry.optString("customerType"))
+                .setCompany(enquiry.optString("company"))
+                .setNationality(enquiry.optString("nationality"))
+                .setPhone(enquiry.optString("phone"))
+                .setEmail(enquiry.optString("email"))
+                .setMainAccount(enquiry.optString("mainAccount"))
+                .setName(enquiry.optString("name"))
+                .setTrustedType(enquiry.optString("trustedType"))
+                .setLang(enquiry.optString("lang"))
+                .setStartDate(enquiry.optString("startDate"))
+                .setEndDate(enquiry.optString("endDate"))
+                .setPwDate(enquiry.optString("pwDate"))
+                .setUserLock(enquiry.optString("userLock"))
+                .setPackAge(enquiry.optString("packAge"))
+                .setUserStatus(enquiry.optString("userStatus"))
+                .build();
+
+
+        return true;
     }
 
 }

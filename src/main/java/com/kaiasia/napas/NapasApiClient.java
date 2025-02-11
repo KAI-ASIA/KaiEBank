@@ -71,7 +71,7 @@ public class NapasApiClient {
             enquiry.put("bankID", napasInfo.getBankId());
 
 
-            body.put("transaction", enquiry);
+            body.put("enquiry", enquiry);
 
             requestJson.put("header", header);
             requestJson.put("body", body);
