@@ -29,7 +29,7 @@ public class NapasTransferPanel extends JPanel {
     private JComboBox<String> bankComboBox;
     private MainFrame mainFrame;
     private UserInfo userInfo;
-    private Vector<String> listBank=new Vector<>();
+    private Vector<String> listBank;
     private NapasInfo napasInfo;
 
     public NapasTransferPanel(MainFrame mainFrame, UserInfo userInfo) {
@@ -37,7 +37,9 @@ public class NapasTransferPanel extends JPanel {
         this.userInfo = userInfo;
 
         // call api
-        callT24ApiGetBank();
+        if(listBank==null){
+            callT24ApiGetBank();
+        }
 
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
@@ -252,7 +254,7 @@ public class NapasTransferPanel extends JPanel {
         }
         System.out.println("đã tìm thấy danh sách ngân hàng");
         JSONArray banksArray=enquiry.optJSONArray("banks");
-
+        listBank=new Vector<>();
         for(int i=0;i<banksArray.length();i++){
             JSONObject bankObject = banksArray.getJSONObject(i);
             String bankCode = bankObject.getString("bankCode");
