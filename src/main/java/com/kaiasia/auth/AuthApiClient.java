@@ -207,9 +207,31 @@ public class AuthApiClient {
     }
 
     //confirm OTP
-    public static JSONObject confirmOtp(){
+    public static JSONObject confirmOtp(String otp){
+        try {
 
-        return null;
+
+            JSONObject enquiry = new JSONObject();
+            enquiry.put("authenType", "confirmOTP");
+            enquiry.put("sessionId", sessionId);
+            enquiry.put("username", username);
+            enquiry.put("otp", otp);
+            enquiry.put("transTime", "20161108122000");
+            enquiry.put("transId", "AUTHEN-confirmOTP-45122211");
+
+
+            JSONObject requestJson = createRequest("GET_ENQUIRY", enquiry);
+            System.out.println("Gửi request: " + requestJson.toString(4));
+
+            String response = HttpUtils.postJson(Config.AUTH_API_URL, requestJson.toString());
+            return parseResponse(response, "Confirm otp");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+
+            return null;
+        }
+
     }
 
 //    // GET_OTP với email riêng của từng customer

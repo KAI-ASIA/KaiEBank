@@ -1,8 +1,11 @@
 package com.kaiasia.ui;
 
 import com.kaiasia.account.AccountApiClient;
+import com.kaiasia.auth.AuthApiClient;
+import com.kaiasia.fundTransferIn.FundTransferInApiClient;
 import com.kaiasia.model.Error.ErrorInfo;
 import com.kaiasia.model.NapasInfo;
+import com.kaiasia.model.TransferIn;
 import com.kaiasia.model.UserInfo;
 import com.kaiasia.napas.NapasApiClient;
 import com.kaiasia.t24utils.T24UtilsApiClient;
@@ -200,24 +203,26 @@ public class NapasTransferPanel extends JPanel {
             return;
         }
 
-        String bankId = "970406";
+        showOtpDialog();
 
-        JSONObject response = NapasApiClient.transfer(senderAccount, amount, benAcc, bankId, transContent);
-        JSONObject transaction = response.optJSONObject("body").optJSONObject("transaction");
-
-        if (response != null) {
-            System.out.println("Kết quả giao dịch:\n" + response.toString(2));
-
-            if (transaction != null && "00".equals(transaction.optString("responseCode"))) {
-                JOptionPane.showMessageDialog(this, "Chuyển tiền thành công! Nhấn OK để trờ về màn hình chính", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-                mainFrame.showDashboard();
-            } else {
-                JOptionPane.showMessageDialog(this, "Chuyển tiền thất bại! Kiểm tra lại thông tin.", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            }
-        } else {
-            JOptionPane.showMessageDialog(this, "Không nhận được phản hồi từ server!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            System.out.println("Giao dịch thất bại! Không có phản hồi từ server.");
-        }
+//        String bankId = "970406";
+//
+//        JSONObject response = NapasApiClient.transfer(senderAccount, amount, benAcc, bankId, transContent);
+//        JSONObject transaction = response.optJSONObject("body").optJSONObject("transaction");
+//
+//        if (response != null) {
+//            System.out.println("Kết quả giao dịch:\n" + response.toString(2));
+//
+//            if (transaction != null && "00".equals(transaction.optString("responseCode"))) {
+//                JOptionPane.showMessageDialog(this, "Chuyển tiền thành công! Nhấn OK để trờ về màn hình chính", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+//                mainFrame.showDashboard();
+//            } else {
+//                JOptionPane.showMessageDialog(this, "Chuyển tiền thất bại! Kiểm tra lại thông tin.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+//            }
+//        } else {
+//            JOptionPane.showMessageDialog(this, "Không nhận được phản hồi từ server!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+//            System.out.println("Giao dịch thất bại! Không có phản hồi từ server.");
+//        }
     }
     private void callT24ApiGetBank(){
         ErrorInfo error=null;
@@ -284,5 +289,104 @@ public class NapasTransferPanel extends JPanel {
         }
 
         return enquiry.optString("accountName");
+    }
+    //màn hình lấy mã otp
+    private void showOtpDialog() {
+        // Tạo một dialog yêu cầu người dùng nhập OTP
+        JDialog otpDialog = new JDialog(mainFrame, "Nhập mã OTP", true);
+        otpDialog.setLayout(new FlowLayout());
+        otpDialog.setSize(300, 200);
+
+        // Tạo label và trường nhập OTP
+        JLabel otpLabel = new JLabel("Nhập mã OTP:");
+        JTextField otpField = new JTextField(10);
+        JButton btnGetOtp = new JButton("Lấy mã OTP");
+        JButton btnConfirmOtp = new JButton("Xác nhận OTP");
+
+        otpDialog.add(otpLabel);
+        otpDialog.add(otpField);
+        otpDialog.add(btnGetOtp);
+        otpDialog.add(btnConfirmOtp);
+
+        // Cấu hình nút "Lấy mã OTP"
+        btnGetOtp.addActionListener(e -> {
+            callApiGetOtp();
+        });
+
+        // Cấu hình nút "Xác nhận OTP"
+        btnConfirmOtp.addActionListener(e -> {
+            if(otpField.getText().isEmpty()){
+                JOptionPane.showMessageDialog(this, "vui lòng điền mã otp ", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if(callApiConfirmOtp(otpField.getText())){
+
+            }
+
+        });
+
+        otpDialog.setLocationRelativeTo(mainFrame);  // Đặt vị trí dialog ở trung tâm màn hình chính
+        otpDialog.setVisible(true);  // Hiển thị dialog
+    }
+    private void callApiGetOtp(){
+        ErrorInfo error=null;
+        JSONObject response= AuthApiClient.getOtp();
+        if (response==null){
+            System.out.println("loi");
+        }
+        JSONObject errorResponse=response.optJSONObject("error");
+        if (error!=null){
+            error=new ErrorInfo(errorResponse.optString("code"),errorResponse.optString("desc"));
+            JOptionPane.showMessageDialog(this, error.getCode()+" : "+error.getDesc(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        JSONObject body=response.optJSONObject("body");
+        if(body==null|| !"OK".equals(body.optString("status"))){
+            JOptionPane.showMessageDialog(this,"không thể lấy mã otp" , "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        JSONObject enquiry=body.optJSONObject("enquiry");
+        if (enquiry==null) {
+            JOptionPane.showMessageDialog(this, "lỗi không lấy được mã otp", "Lỗi", JOptionPane.ERROR_MESSAGE);
+
+            return;
+        }
+
+        JOptionPane.showMessageDialog(this, "lấy mã opt thành công", "Lỗi", JOptionPane.INFORMATION_MESSAGE);
+
+    }
+
+
+    private boolean callApiConfirmOtp(String otp){
+        ErrorInfo error=null;
+        JSONObject response= AuthApiClient.confirmOtp(otp);
+        if (response==null){
+            System.out.println("lỗi ko call được api");
+            return false;
+        }
+        JSONObject errorResponse=response.optJSONObject("error");
+        if (error!=null){
+            error=new ErrorInfo(errorResponse.optString("code"),errorResponse.optString("desc"));
+            JOptionPane.showMessageDialog(this, error.getCode()+" : "+error.getDesc(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        JSONObject body=response.optJSONObject("body");
+        if(body==null|| !"OK".equals(body.optString("status"))){
+            JOptionPane.showMessageDialog(this,"không thể xác thực" , "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        JSONObject enquiry=body.optJSONObject("enquiry");
+        if (enquiry==null) {
+            JOptionPane.showMessageDialog(this, "không thể xác thực", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        JOptionPane.showMessageDialog(this, "xác thực opt thành công", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        return true;
+
     }
 }

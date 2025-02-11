@@ -148,7 +148,7 @@ public class FundTransferInPanel extends JPanel {
                 return;
             }
             // nếu xác nhận otp thành công thì call api chuyển tiền
-            if(callApiConfirmOtp()){
+            if(callApiConfirmOtp(otpField.getText())){
                 transferIn = new TransferIn.TransferBuilder()
                     .setCreditAccount(creditAccount.getText())
                     .setDebitAccount(LoginPanel.ebankInfo.getMainAccount())
@@ -231,9 +231,9 @@ public class FundTransferInPanel extends JPanel {
     }
 
 
-    private boolean callApiConfirmOtp(){
+    private boolean callApiConfirmOtp(String otp){
         ErrorInfo error=null;
-        JSONObject response= AuthApiClient.confirmOtp();
+        JSONObject response= AuthApiClient.confirmOtp(otp);
         if (response==null){
             System.out.println("lỗi ko call được api");
             return false;
