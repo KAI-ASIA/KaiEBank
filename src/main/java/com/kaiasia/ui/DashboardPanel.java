@@ -1,6 +1,8 @@
 package com.kaiasia.ui;
 
+import com.kaiasia.account.AccountApiClient;
 import com.kaiasia.model.AccountInfo;
+import com.kaiasia.model.Error.ErrorInfo;
 import com.kaiasia.model.UserInfo;
 import com.kaiasia.t24utils.T24UtilsApiClient;
 import org.json.JSONArray;
@@ -26,6 +28,9 @@ public class DashboardPanel extends JPanel {
         this.mainFrame = mainFrame;
         setLayout(new BorderLayout());
         System.out.println("DEBUG: userInfo trong DashboardPanel: " + userInfo);
+
+        //call api get account
+        callApiGetCurrentAccount();
 
         // Sidebar
         JPanel sidebar = new JPanel();
@@ -287,4 +292,49 @@ public class DashboardPanel extends JPanel {
 //    private void showInternalTransferScreen() {
 //        mainFrame.showInternalTransferScreen(mainFrame.getCurrentUser());
 //    }
+
+
+   private void callApiGetCurrentAccount(){
+       ErrorInfo error=null;
+
+       JSONObject response= AccountApiClient.getCurrentAccount();
+       if (response==null){
+           System.out.println("loi");
+
+           return ;
+       }
+       JSONObject errorResponse=response.optJSONObject("error");
+       if (error!=null){
+           error=new ErrorInfo(errorResponse.optString("code"),errorResponse.optString("desc"));
+           JOptionPane.showMessageDialog(this, error.getCode()+" : "+error.getDesc(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+           return ;
+       }
+
+       JSONObject body=response.optJSONObject("body");
+       if(body==null|| !"OK".equals(body.optString("status"))){
+           JOptionPane.showMessageDialog(this,"không thể lấy thông tin cá nhân" , "Lỗi", JOptionPane.ERROR_MESSAGE);
+           return ;
+       }
+
+       JSONObject enquiry=body.optJSONObject("enquiry");
+       if (enquiry==null) {
+           JOptionPane.showMessageDialog(this, "không thể lấy thông tin cá nhân", "Lỗi", JOptionPane.ERROR_MESSAGE);
+           return;
+       }
+       System.out.println("đã lấy được thông tin cá nhân");
+       accountInfo=new AccountInfo.Builder()
+               .accountID(enquiry.optString("accountId"))
+               .altAccount(enquiry.optString("altAccount"))
+               .productCode(enquiry.optString("productCode"))
+               .accountType(enquiry.optString("accountType"))
+               .customerID(enquiry.optString("customerID"))
+               .currency(enquiry.optString("currency"))
+               .company(enquiry.optString("company"))
+               .shortTitle(enquiry.optString("shortTitle"))
+               .shortName(enquiry.optString("shortName"))
+               .category(enquiry.optString("category"))
+               .availBal(enquiry.optString("availBal"))
+               .build();
+       return;
+   }
 }

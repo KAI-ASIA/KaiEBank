@@ -118,6 +118,9 @@ public class NapasTransferPanel extends JPanel {
                            .accountId(benAccField.getText())
                            .bankId(bankId)
                            .build();
+
+                   nameBenAccField.setText(callApigetInterBankAccount());
+
                }
                catch (Exception ex) {
                    ex.printStackTrace();
@@ -253,32 +256,33 @@ public class NapasTransferPanel extends JPanel {
         }
 
     }
-    private boolean callApigetInterBankAccount(){
+    private String callApigetInterBankAccount(){
         ErrorInfo error=null;
         JSONObject response= NapasApiClient.getInterBankAccount(napasInfo);
 
         if (response==null){
             System.out.println("loi");
-            return false;
+            return null;
         }
         JSONObject errorResponse=response.optJSONObject("error");
         if (error!=null){
             error=new ErrorInfo(errorResponse.optString("code"),errorResponse.optString("desc"));
             JOptionPane.showMessageDialog(this, error.getCode()+" : "+error.getDesc(), "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return false;
+            return null;
         }
 
         JSONObject body=response.optJSONObject("body");
         if(body==null|| !"OK".equals(body.optString("status"))){
             JOptionPane.showMessageDialog(this,"không thể tìm" , "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return false;
+            return null;
         }
 
         JSONObject enquiry=body.optJSONObject("enquiry");
         if (enquiry==null) {
             JOptionPane.showMessageDialog(this, "lỗi không tìm ", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return false;
+            return null;
         }
-        return true;
+
+        return enquiry.optString("accountName");
     }
 }
