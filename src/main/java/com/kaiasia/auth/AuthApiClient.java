@@ -2,6 +2,7 @@ package com.kaiasia.auth;
 
 import com.kaiasia.config.Config;
 import com.kaiasia.customer.CustomerApiClient;
+import com.kaiasia.model.ResetPasswordInfo;
 import com.kaiasia.model.UserInfo;
 import com.kaiasia.ui.MainFrame;
 import com.kaiasia.util.HttpUtils;
@@ -326,14 +327,14 @@ public class AuthApiClient {
     }
 
     // RESET_PASSWORD
-    public static JSONObject resetPassword(String username, String resetCode, String newPassword) {
+    public static JSONObject resetPassword(ResetPasswordInfo resetPasswordInfo) {
         try {
             JSONObject enquiry = new JSONObject();
             enquiry.put("authenType", "setPassword");
             enquiry.put("transId", "AUTHEN-setPassword-" + System.currentTimeMillis());
-            enquiry.put("username", username);
-            enquiry.put("resetCode", resetCode);
-            enquiry.put("newPassword", newPassword);
+            enquiry.put("username", resetPasswordInfo.getUsername());
+            enquiry.put("resetCode", resetPasswordInfo.getResetCode());
+            enquiry.put("newPassword", resetPasswordInfo.getNewPassword());
 
             JSONObject requestJson = createRequest("GET_ENQUIRY", enquiry);
             System.out.println("Gửi request đặt lại mật khẩu: " + requestJson.toString(4));
@@ -347,4 +348,6 @@ public class AuthApiClient {
             return null;
         }
     }
+
+
 }

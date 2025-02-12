@@ -1,6 +1,11 @@
 package com.kaiasia.ui;
 
 import com.kaiasia.auth.AuthApiClient;
+import com.kaiasia.ebank.EbankApiClient;
+import com.kaiasia.model.EbankInfo;
+import com.kaiasia.model.Error.ErrorInfo;
+import com.kaiasia.model.ResetPasswordInfo;
+import com.kaiasia.model.UserInfo;
 import org.json.JSONObject;
 
 import javax.swing.*;
@@ -13,6 +18,9 @@ public class ForgotPasswordPanel extends JPanel {
     private JButton requestResetButton, confirmResetButton;
     private MainFrame mainFrame;
     private String lastTransId;
+    private ResetPasswordInfo resetPasswordInfo;
+    private UserInfo userInfo;
+    private EbankInfo ebankInfo;
 
     public ForgotPasswordPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -97,6 +105,8 @@ public class ForgotPasswordPanel extends JPanel {
 
         // Gửi request API
         System.out.println("Gửi request quên mật khẩu (AUTH-5) cho username: " + username);
+        //kiểm tra username có đúng ko
+
         JSONObject response = AuthApiClient.requestResetCode(username);
 
         // Kiểm tra response null
@@ -156,8 +166,14 @@ public class ForgotPasswordPanel extends JPanel {
 
         // Debug: Kiểm tra giá trị resetCode trước khi gửi API
         System.out.println("Reset Code nhập từ UI: " + resetCode);
+        // lấy thông tin resetPass
+        resetPasswordInfo=new ResetPasswordInfo.Builder()
+                .username(username)
+                .newPassword(newPassword)
+                .resetCode(resetCode)
+                .build();
 
-        JSONObject response = AuthApiClient.resetPassword(username, resetCode, newPassword);
+        JSONObject response = AuthApiClient.resetPassword(resetPasswordInfo);
 
         if (response == null) {
             System.out.println("Không nhận được phản hồi từ API!");
@@ -173,5 +189,7 @@ public class ForgotPasswordPanel extends JPanel {
             System.out.println("Đặt lại mật khẩu thành công!");
         }
     }
+
+
 
 }
