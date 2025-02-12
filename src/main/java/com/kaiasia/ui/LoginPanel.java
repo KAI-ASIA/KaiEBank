@@ -170,10 +170,10 @@ public class LoginPanel extends JPanel {
         userInfoShare=userInfo;
 
         //call API ebank để lấy thông tin tài khoản
-//        if(callApiGetAccountEbank()){
-//            //call api account
-//
-//        }
+        if(callApiGetAccountEbank()){
+            //call api account
+
+        }
 
 
 

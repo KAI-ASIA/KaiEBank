@@ -152,7 +152,7 @@ public class AuthApiClient {
             enquiry.put("authenType", "getOTP");
             enquiry.put("sessionId", sessionId);
             enquiry.put("username", username);
-            enquiry.put("gmail", "dn596209@gmail.com");
+            enquiry.put("gmail", "qthe23572@gmail.com");
             enquiry.put("transTime", System.currentTimeMillis());
             enquiry.put("transId", "AUTHEN-getOTP-" + System.currentTimeMillis());
             enquiry.put("transInfo", "Giao dịch lấy mã OTP");
@@ -207,7 +207,7 @@ public class AuthApiClient {
     }
 
     //confirm OTP
-    public static JSONObject confirmOtp(String otp){
+    public static JSONObject confirmOtp(String otp,String transId){
         try {
 
 

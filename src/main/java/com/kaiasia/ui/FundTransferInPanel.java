@@ -21,6 +21,8 @@ public class FundTransferInPanel extends JPanel {
     private MainFrame mainFrame;
     public static TransferIn transferIn;
 
+    private String transId;
+
     public FundTransferInPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
         // Thiết lập layout chính
@@ -227,13 +229,13 @@ public class FundTransferInPanel extends JPanel {
         }
 
         JOptionPane.showMessageDialog(this, "lấy mã opt thành công", "Lỗi", JOptionPane.ERROR_MESSAGE);
-
+        transId=enquiry.optString("transId");
     }
 
 
     private boolean callApiConfirmOtp(String otp){
         ErrorInfo error=null;
-        JSONObject response= AuthApiClient.confirmOtp(otp);
+        JSONObject response= AuthApiClient.confirmOtp(otp,transId);
         if (response==null){
             System.out.println("lỗi ko call được api");
             return false;
@@ -257,7 +259,7 @@ public class FundTransferInPanel extends JPanel {
             return false;
         }
 
-        JOptionPane.showMessageDialog(this, "xác thực opt thành công", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, "xác thực opt thành công", "thông báo", JOptionPane.INFORMATION_MESSAGE);
         return true;
 
     }

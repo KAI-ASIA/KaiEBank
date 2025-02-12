@@ -3,9 +3,11 @@ package com.kaiasia.ui;
 import com.kaiasia.account.AccountApiClient;
 import com.kaiasia.auth.AuthApiClient;
 import com.kaiasia.fundTransferIn.FundTransferInApiClient;
+import com.kaiasia.fundTransferOut.FundTransferOutApiClient;
 import com.kaiasia.model.Error.ErrorInfo;
 import com.kaiasia.model.NapasInfo;
 import com.kaiasia.model.TransferIn;
+import com.kaiasia.model.TransferOut;
 import com.kaiasia.model.UserInfo;
 import com.kaiasia.napas.NapasApiClient;
 import com.kaiasia.t24utils.T24UtilsApiClient;
@@ -31,6 +33,10 @@ public class NapasTransferPanel extends JPanel {
     private UserInfo userInfo;
     private Vector<String> listBank;
     private NapasInfo napasInfo;
+    private TransferOut transferOut;
+    private JTextField otpField;
+
+    private String transId;
 
     public NapasTransferPanel(MainFrame mainFrame, UserInfo userInfo) {
         this.mainFrame = mainFrame;
@@ -199,7 +205,7 @@ public class NapasTransferPanel extends JPanel {
         String benAcc = benAccField.getText().trim();
         String transContent = transContentField.getText().trim();
 
-        if (senderAccount == null || senderAccount.equals("Không có tài khoản") || amount.isEmpty() || benAcc.isEmpty() || transContent.isEmpty()) {
+        if (senderAccount == null || senderAccount.equals("Không có tài khoản") || amount.isEmpty() || benAcc.isEmpty() || transContent.isEmpty() || nameBenAccField.getText().isEmpty()) {
             JOptionPane.showMessageDialog(this, "Vui lòng điền đầy đủ thông tin!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             System.out.println("LỖI: Thiếu thông tin nhập vào.");
             return;
@@ -301,7 +307,7 @@ public class NapasTransferPanel extends JPanel {
 
         // Tạo label và trường nhập OTP
         JLabel otpLabel = new JLabel("Nhập mã OTP:");
-        JTextField otpField = new JTextField(10);
+        otpField = new JTextField(10);
         JButton btnGetOtp = new JButton("Lấy mã OTP");
         JButton btnConfirmOtp = new JButton("Xác nhận OTP");
 
@@ -322,7 +328,7 @@ public class NapasTransferPanel extends JPanel {
                 return;
             }
             if(callApiConfirmOtp(otpField.getText())){
-
+                callApiFundTransferOut();
             }
 
         });
@@ -356,14 +362,14 @@ public class NapasTransferPanel extends JPanel {
             return;
         }
 
-        JOptionPane.showMessageDialog(this, "lấy mã opt thành công", "Lỗi", JOptionPane.INFORMATION_MESSAGE);
-
+        JOptionPane.showMessageDialog(this, "lấy mã opt thành công", "thông báo", JOptionPane.INFORMATION_MESSAGE);
+        transId=enquiry.optString("transId");
     }
 
 
     private boolean callApiConfirmOtp(String otp){
         ErrorInfo error=null;
-        JSONObject response= AuthApiClient.confirmOtp(otp);
+        JSONObject response= AuthApiClient.confirmOtp(otp,transId);
         if (response==null){
             System.out.println("lỗi ko call được api");
             return false;
@@ -387,8 +393,51 @@ public class NapasTransferPanel extends JPanel {
             return false;
         }
 
-        JOptionPane.showMessageDialog(this, "xác thực opt thành công", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, "xác thực opt thành công", "thông báo", JOptionPane.INFORMATION_MESSAGE);
+        //lấy thông tin transferOut
+        transferOut = new TransferOut.Builder()
+                .sessionId(LoginPanel.userInfoShare.getSessionId())
+                .customerID(LoginPanel.ebankInfo.getCustomerId())
+                .company(LoginPanel.ebankInfo.getCompany())
+                .OTP(otpField.getText())
+                .debitAccount((String) senderAccountDropdown.getSelectedItem())
+                .creditAccount(benAccField.getText())
+                .bankId(napasInfo.getBankId())
+                .transAmount(amountField.getText())
+                .transDesc(transContentField.getText())
+                .build();
+
         return true;
 
+    }
+
+    private void callApiFundTransferOut(){
+        ErrorInfo error=null;
+        JSONObject response= FundTransferOutApiClient.fundTransferOut(transferOut);
+        if (response==null){
+            System.out.println("lỗi ko call được api");
+            return ;
+        }
+        JSONObject errorResponse=response.optJSONObject("error");
+        if (error!=null){
+            error=new ErrorInfo(errorResponse.optString("code"),errorResponse.optString("desc"));
+            JOptionPane.showMessageDialog(this, error.getCode()+" : "+error.getDesc(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return ;
+        }
+
+        JSONObject body=response.optJSONObject("body");
+        if(body==null|| !"OK".equals(body.optString("status"))){
+            JOptionPane.showMessageDialog(this,"không thể chuyển tiền" , "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return ;
+        }
+
+        JSONObject enquiry=body.optJSONObject("enquiry");
+        if (enquiry==null) {
+            JOptionPane.showMessageDialog(this, "không thể chuyển tiền", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return ;
+        }
+
+        JOptionPane.showMessageDialog(this, "chuyển tiền thành công", "thông báo", JOptionPane.INFORMATION_MESSAGE);
+        return;
     }
 }

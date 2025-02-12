@@ -2,6 +2,7 @@ package com.kaiasia.fundTransferIn;
 
 import com.kaiasia.config.Config;
 import com.kaiasia.model.TransferIn;
+import com.kaiasia.ui.LoginPanel;
 import com.kaiasia.util.HttpUtils;
 import org.json.JSONObject;
 
@@ -32,8 +33,8 @@ public class FundTransferInApiClient {
             transaction.put("customerID", transferIn.getCustomerID());
             transaction.put("OTP", transferIn.getOtp());
             transaction.put("transactionId", System.currentTimeMillis());
-            transaction.put("debitAccount", "AUTHEN-getOTP-" + System.currentTimeMillis());
-            transaction.put("creditAccount", "Giao dịch lấy mã OTP");
+            transaction.put("debitAccount", transferIn.getDebitAccount());
+            transaction.put("creditAccount", transferIn.getCreditAccount());
 
             transaction.put("bankId", "203");
 
