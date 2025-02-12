@@ -115,7 +115,7 @@ public class FundTransferInPanel extends JPanel {
 
         // Cấu hình nút quay lại
         btnBack.addActionListener(e -> {
-
+            mainFrame.showDashboard();
         });
     }
 

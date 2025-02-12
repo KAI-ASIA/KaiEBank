@@ -36,7 +36,7 @@ public class FundTransferInApiClient {
             transaction.put("debitAccount", transferIn.getDebitAccount());
             transaction.put("creditAccount", transferIn.getCreditAccount());
 
-            transaction.put("bankId", "203");
+            transaction.put("bankId", "300");
 
             transaction.put("transAmount",transferIn.getAmount());
 
