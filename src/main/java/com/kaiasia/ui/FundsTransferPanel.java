@@ -206,37 +206,61 @@ public class FundsTransferPanel extends JPanel {
             return;
         }
 
-        // Nếu nhập altAccount, map để lấy accountId
+        // Lấy altAccount hoặc accountId nếu có
         String altAccount = accountMap.getOrDefault(inputAccount, inputAccount);
 
+        // Kiểm tra tài khoản nội bộ
         new Thread(() -> {
             JSONObject response = T24UtilsApiClient.getAccountInfo(altAccount);
             if (response != null && "OK".equals(response.getJSONObject("body").optString("status"))) {
                 String accountName = response.getJSONObject("body").getJSONObject("enquiry").optString("shortTitle", "Không tìm thấy");
-                benAccNameLabel.setText(accountName);
-            } else {
-                benAccNameLabel.setText("Không tìm thấy tài khoản");
+                SwingUtilities.invokeLater(() -> benAccNameLabel.setText(accountName));
             }
+        }).start();
+
+        // Lấy senderAccount và senderName để kiểm tra với Napas
+        String selectedAltAccount = (String) senderAccountDropdown.getSelectedItem();
+        String senderAccount = accountMap.get(selectedAltAccount);
+        String senderName = userInfo.getCustomerName();
+        String bankId = extractBankId((String) bankDropdown.getSelectedItem());
+
+        if ("304".equals(bankId)) {
+            bankId = "970406";
+        }
+
+        // Kiểm tra giá trị null trước khi gọi API
+        if (senderAccount == null || senderName == null || bankId == null) {
+            System.out.println("Lỗi: senderAccount, senderName hoặc bankId null");
+            return;
+        }
+
+        // Kiểm tra tài khoản bằng Napas API
+        String finalBankId = bankId;
+        new Thread(() -> {
+            JSONObject napasResponse = NapasApiClient.checkAcc(senderAccount, senderName, inputAccount, finalBankId);
+            JSONObject body = napasResponse.optJSONObject("body");
+                if (body != null) {
+                    JSONObject enquiry = body.optJSONObject("enquiry");
+                    if (enquiry != null) {
+                        JSONObject accountInfo = enquiry.optJSONObject("accountInfo");
+                        String accountName = accountInfo.optString("accountName", "Không tìm thấy");
+                        System.out.println("Tên tài khoản lấy được: " + accountName);
+                        SwingUtilities.invokeLater(() -> benAccNameLabel.setText(accountName));
+                    }
+                }
         }).start();
     }
 
     private void handleTransfer() {
         String selectedAltAccount = (String) senderAccountDropdown.getSelectedItem();
-        String senderAccount = accountMap.get(selectedAltAccount); // Lấy accountId từ altAccount
+        String senderAccount = accountMap.get(selectedAltAccount);
 
         String amount = amountField.getText().trim();
         String inputBenAcc = benAccField.getText().trim();
         String transContent = transContentField.getText().trim();
         String bankId = extractBankId((String) bankDropdown.getSelectedItem());
 
-        if ("304".equals(bankId)) {
-            System.out.println("Đổi BankID từ 304 thành NapasID 970406");
-            bankId = "970406";
-        }
-
         boolean isExternal = bankId != null && !bankId.startsWith("300");
-
-        // Nếu nhập altAccount, lấy accountId từ map, nếu không thì giữ nguyên
         String benAcc = accountMap.getOrDefault(inputBenAcc, inputBenAcc);
 
         if (senderAccount == null || senderAccount.isEmpty() || amount.isEmpty() || benAcc.isEmpty() || transContent.isEmpty()) {
@@ -244,30 +268,18 @@ public class FundsTransferPanel extends JPanel {
             return;
         }
 
-        JSONObject response = NapasApiClient.transfer(senderAccount, amount, benAcc, bankId, transContent);
-        JSONObject transaction = response.optJSONObject("body").optJSONObject("transaction");
-
-        // Kiểm tra nếu là NapasID (970406) + tài khoản nhận 001
-        if ("970406".equals(bankId) && "001".equals(benAcc)) {
-            System.out.println("Chuyển qua Napas");
-
-            if (response != null) {
-                System.out.println("Kết quả giao dịch:\n" + response.toString(4));
-                if (transaction != null && "00".equals(transaction.optString("responseCode"))) {
-                    JOptionPane.showMessageDialog(this, "Chuyển tiền NAPAS thành công! Nhấn OK để trờ về màn hình chính", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-                    mainFrame.showDashboard();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Chuyển tiền thất bại! Kiểm tra lại thông tin.", "Lỗi", JOptionPane.ERROR_MESSAGE);
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "Lỗi khi chuyển qua Napas!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            }
+        JSONObject sessionResponse = AuthApiClient.takeSession(userInfo.getSessionId());
+        if (sessionResponse == null || !sessionResponse.has("body") || !"OK".equals(sessionResponse.getJSONObject("body").optString("status"))) {
+            JOptionPane.showMessageDialog(this, "Lỗi xác thực phiên làm việc!", "Lỗi", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        showOtpVerificationDialog(senderAccount, benAcc, amount, transContent, bankId, isExternal);
+
+        boolean isFromFTOut = true;
+
+        showOtpVerificationDialog(senderAccount, benAcc, amount, transContent, bankId, isExternal, isFromFTOut);
     }
 
-    private void showOtpVerificationDialog(String senderAccount, String benAcc, String amount, String transContent, String bankId, boolean isExternal) {
+    private void showOtpVerificationDialog(String senderAccount, String benAcc, String amount, String transContent, String bankId, boolean isExternal, boolean isFromFTOut) {
         JDialog otpDialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Xác nhận OTP", true);
         otpDialog.setSize(350, 250);
         otpDialog.setLayout(new GridBagLayout());
@@ -316,7 +328,6 @@ public class FundsTransferPanel extends JPanel {
             }
         });
 
-        // Xác nhận giao dịch sau khi nhập OTP
         btnConfirm.addActionListener(e -> {
             String otpCode = txtOtp.getText().trim();
             if (otpCode.isEmpty()) {
@@ -324,16 +335,16 @@ public class FundsTransferPanel extends JPanel {
                 return;
             }
 
-//            JSONObject otpConfirmResponse = AuthApiClient.confirmOtp(userInfo.getSessionId(), userInfo.getUsername(), otpCode);
-//
-//            if (otpConfirmResponse == null || otpConfirmResponse.has("error")) {
-//                JOptionPane.showMessageDialog(otpDialog, "Xác thực OTP thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-//                return;
-//            }
+            JSONObject transferResponse = FundsTransferApiClient.transferFunds(userInfo.getSessionId(), userInfo.getCustomerID(), otpCode,
+                    senderAccount, benAcc, bankId, amount, transContent, isExternal
+            );
 
-            // Gọi API chuyển tiền sau khi xác thực OTP thành công
-            JSONObject response = FundsTransferApiClient.transferFunds(userInfo.getSessionId(), userInfo.getCustomerID(), otpCode, senderAccount, benAcc, bankId, amount, transContent, isExternal);
-            JOptionPane.showMessageDialog(this, "Chuyển tiền thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            if (transferResponse == null) {
+                JOptionPane.showMessageDialog(otpDialog, "Lỗi: Không nhận được phản hồi từ hệ thống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            JOptionPane.showMessageDialog(otpDialog, "Giao dịch thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             otpDialog.dispose();
             mainFrame.showDashboard();
         });
@@ -364,6 +375,7 @@ public class FundsTransferPanel extends JPanel {
                 }
             }
         }
+
         bankDropdown.setPreferredSize(new Dimension(240, 38));
         bankDropdown.revalidate();
         bankDropdown.repaint();

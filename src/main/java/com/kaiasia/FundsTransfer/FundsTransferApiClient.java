@@ -29,13 +29,53 @@ public class FundsTransferApiClient {
                 bankId = "970406";
             }
 
-            // Kiểm tra nếu là Napas (970406) và account 001 thì gọi NapasAPI
+            // Nếu là giao dịch Napas, gọi FT Out trước
             if ("970406".equals(bankId) && "001".equals(creditAccount)) {
                 System.out.println("Giao dịch sẽ được chuyển qua Napas");
-                return NapasApiClient.transfer(debitAccount, transAmount, creditAccount, bankId, transDesc);
+
+                // Gọi FT Out API
+                JSONObject ftOutTransaction = new JSONObject();
+                ftOutTransaction.put("authenType", "KAI.API.FT.OUT");
+                ftOutTransaction.put("sessionId", sessionId);
+                ftOutTransaction.put("customerID", customerID);
+                ftOutTransaction.put("company", "VN0010001");
+                ftOutTransaction.put("OTP", otp);
+                ftOutTransaction.put("transactionId", System.currentTimeMillis());
+                ftOutTransaction.put("debitAccount", debitAccount);
+                ftOutTransaction.put("creditAccount", creditAccount);
+                ftOutTransaction.put("bankId", "970406");
+                ftOutTransaction.put("transAmount", transAmount);
+                ftOutTransaction.put("transDesc", transDesc);
+
+                JSONObject ftOutBody = new JSONObject();
+                ftOutBody.put("command", "GET_TRANSACTION");
+                ftOutBody.put("transaction", ftOutTransaction);
+
+                JSONObject ftOutRequest = new JSONObject();
+                ftOutRequest.put("header", createHeader());
+                ftOutRequest.put("body", ftOutBody);
+
+                System.out.println("Gửi request FT Out: " + ftOutRequest.toString(4));
+
+                // Gọi API FT Out
+                String ftOutResponse = HttpUtils.postJson(Config.FUNDSTRANSFER_API_URL, ftOutRequest.toString());
+//                JSONObject ftOutJsonResponse = new JSONObject(ftOutResponse);
+//                System.out.println("Response từ FT Out API: " + ftOutJsonResponse.toString(4));
+//
+//                if (!"SUCCESS".equals(ftOutJsonResponse.optJSONObject("body").optString("status"))) {
+//                    System.err.println("Lỗi khi gọi FT Out, không thể trừ tiền!");
+//                    return ftOutJsonResponse;  // Trả về lỗi nếu không trừ tiền được
+//                }
+
+                // Nếu FT Out thành công, gọi Napas API
+                System.out.println("Gọi Napas API để hoàn tất giao dịch liên ngân hàng");
+                JSONObject napasResponse = NapasApiClient.transfer(debitAccount, transAmount, creditAccount, bankId, transDesc);
+                System.out.println("Response từ Napas API: " + napasResponse.toString(4));
+
+                return napasResponse;  // Trả về phản hồi từ Napas API
             }
 
-            // Nếu không, xử lý chuyển tiền bình thường
+            // Nếu không phải Napas, xử lý như bình thường
             JSONObject transaction = new JSONObject();
             transaction.put("authenType", isInterbank ? "KAI.API.FT.OUT" : "KAI.API.FT.IN");
             transaction.put("sessionId", sessionId);

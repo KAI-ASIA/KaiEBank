@@ -122,6 +122,31 @@ public class AuthApiClient {
         }
     }
 
+    // TAKE_SESSION
+    public static JSONObject takeSession(String sessionId) {
+        try {
+            if (sessionId == null || sessionId.trim().isEmpty()) {
+                System.err.println("Lỗi: sessionId không được để trống!");
+                return null;
+            }
+
+            JSONObject enquiry = new JSONObject();
+            enquiry.put("authenType", "takeSession");
+            enquiry.put("sessionId", sessionId);
+
+            JSONObject requestJson = createRequest("GET_ENQUIRY", enquiry);
+            System.out.println("Gửi request lấy session: " + requestJson.toString(4));
+
+            String response = HttpUtils.postJson(Config.AUTH_API_URL, requestJson.toString());
+            return parseResponse(response, "TAKE_SESSION");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println("Lỗi ngoại lệ khi lấy session: " + ex.getMessage());
+            return null;
+        }
+    }
+
     // GET_OTP với email cho sẵn
     public static JSONObject getOtp() {
         try {
