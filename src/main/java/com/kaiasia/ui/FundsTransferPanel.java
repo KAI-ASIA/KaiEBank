@@ -178,7 +178,7 @@ public class FundsTransferPanel extends JPanel {
             String accountId = account.optString("accountId", "N/A");
             String altAccount = account.optString("altAccount", "N/A");
 
-            senderAccountDropdown.addItem(altAccount);
+            senderAccountDropdown.addItem(accountId);
             accountMap.put(altAccount, accountId); // Map từ altAccount → accountId
             accountMap.put(accountId, accountId);  // Map từ accountId → accountId
         }
@@ -316,8 +316,23 @@ public class FundsTransferPanel extends JPanel {
             }
         });
 
+        // Xác nhận giao dịch sau khi nhập OTP
         btnConfirm.addActionListener(e -> {
-            JSONObject response = FundsTransferApiClient.transferFunds(userInfo.getSessionId(), userInfo.getCustomerID(), txtOtp.getText().trim(), senderAccount, benAcc, bankId, amount, transContent, isExternal);
+            String otpCode = txtOtp.getText().trim();
+            if (otpCode.isEmpty()) {
+                JOptionPane.showMessageDialog(otpDialog, "Vui lòng nhập mã OTP!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+//            JSONObject otpConfirmResponse = AuthApiClient.confirmOtp(userInfo.getSessionId(), userInfo.getUsername(), otpCode);
+//
+//            if (otpConfirmResponse == null || otpConfirmResponse.has("error")) {
+//                JOptionPane.showMessageDialog(otpDialog, "Xác thực OTP thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+//                return;
+//            }
+
+            // Gọi API chuyển tiền sau khi xác thực OTP thành công
+            JSONObject response = FundsTransferApiClient.transferFunds(userInfo.getSessionId(), userInfo.getCustomerID(), otpCode, senderAccount, benAcc, bankId, amount, transContent, isExternal);
             JOptionPane.showMessageDialog(this, "Chuyển tiền thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             otpDialog.dispose();
             mainFrame.showDashboard();

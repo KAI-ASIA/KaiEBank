@@ -278,6 +278,36 @@ public class AuthApiClient {
         }
     }
 
+    // CONFIRM OTP
+    public static JSONObject confirmOtp(String sessionId, String username, String otp) {
+        try {
+            if (sessionId == null || username == null || otp == null) {
+                System.err.println("Lỗi: sessionId, username hoặc otp không được null!");
+                return null;
+            }
+
+            JSONObject enquiry = new JSONObject();
+            enquiry.put("authenType", "confirmOTP");
+            enquiry.put("sessionId", sessionId);
+            enquiry.put("username", username);
+            enquiry.put("otp", otp);
+            enquiry.put("transTime", System.currentTimeMillis());
+            enquiry.put("transId", "AUTHEN-confirmOTP-" + System.currentTimeMillis());
+
+            JSONObject requestJson = createRequest("GET_ENQUIRY", enquiry);
+            System.out.println("Gửi request confirm OTP: " + requestJson.toString(4));
+
+            String response = HttpUtils.postJson(Config.AUTH_API_URL, requestJson.toString());
+            return parseResponse(response, "CONFIRM_OTP");
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            System.err.println("Lỗi ngoại lệ khi xác nhận OTP: " + ex.getMessage());
+            return null;
+        }
+    }
+
+
     // REQUEST_RESET_CODE
     public static JSONObject requestResetCode(String username) {
         try {

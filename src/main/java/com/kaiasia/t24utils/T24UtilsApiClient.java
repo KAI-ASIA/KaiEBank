@@ -78,7 +78,7 @@ public class T24UtilsApiClient {
         if (accountInfo != null && accountInfo.getJSONObject("body").getString("status").equals("OK")) {
             JSONObject detail = accountInfo.getJSONObject("body").getJSONObject("enquiry");
 
-            String message = "<html><b>Tài khoản: </b>" + detail.optString("altAccount", "N/A") +
+            String message = "<html><b>Tài khoản: </b>" + detail.optString("accountId", "N/A") +
                     "<br><b>Chủ tài khoản: </b>" + detail.optString("shortName", "N/A") +
                     "<br><b>Loại tài khoản: </b>" + detail.optString("accountType", "N/A") +
                     "<br><b>Số dư khả dụng: </b>" + detail.optString("currency", "VND") + " " + detail.optString("avaiBalance", "0") +

@@ -57,6 +57,18 @@ public class DashboardPanel extends JPanel {
             }
         });
 
+        btnFeatures.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(
+                        mainFrame,
+                        "Tính năng đang được phát triển!",
+                        "Thông báo",
+                        JOptionPane.INFORMATION_MESSAGE
+                );
+            }
+        });
+
         btnLogout.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -201,7 +213,7 @@ public class DashboardPanel extends JPanel {
 
                     JPanel accountItemPanel = createAccountPanel(
                             detail.optString("shortTitle", "Tài khoản thanh toán"),
-                            detail.optString("altAccount", "N/A"),
+                            detail.optString("accountId", "N/A"),
                             detail.optString("currency", "VND"),
                             detail.optString("avaiBalance", "0"),
                             detail.optString("accountId", "N/A")
