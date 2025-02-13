@@ -5,6 +5,7 @@ public class ResetPasswordInfo {
     private final String resetCode;
     private final String newPassword;
 
+
     private ResetPasswordInfo(Builder builder) {
         this.username = builder.username;
         this.resetCode = builder.resetCode;
@@ -28,6 +29,7 @@ public class ResetPasswordInfo {
         private String username;
         private String resetCode;
         private String newPassword;
+
 
         public Builder username(String username) {
             this.username = username;

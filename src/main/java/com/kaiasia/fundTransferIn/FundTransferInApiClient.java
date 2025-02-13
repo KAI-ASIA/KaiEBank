@@ -9,6 +9,7 @@ import org.json.JSONObject;
 public class FundTransferInApiClient {
     public static JSONObject getFundTransferIn(TransferIn transferIn) {
         try {
+
             JSONObject requestJson = new JSONObject();
 
             // Tạo Header
@@ -29,6 +30,9 @@ public class FundTransferInApiClient {
             // Tạo Enquiry
             JSONObject transaction = new JSONObject();
             transaction.put("authenType", "KAI.API.FT.IN");
+
+
+
             transaction.put("sessionId",transferIn.getSessionId());
             transaction.put("customerID", transferIn.getCustomerID());
             transaction.put("OTP", transferIn.getOtp());
@@ -41,6 +45,8 @@ public class FundTransferInApiClient {
             transaction.put("transAmount",transferIn.getAmount());
 
             transaction.put("transDesc",transferIn.getDesc());
+
+            System.out.println("Gửi request: "+requestJson.toString(4));
 
             String response = HttpUtils.postJson(Config.FUNDTRANSFERIN_API_URL, requestJson.toString());
 

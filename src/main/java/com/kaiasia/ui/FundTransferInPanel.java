@@ -151,15 +151,21 @@ public class FundTransferInPanel extends JPanel {
             }
             // nếu xác nhận otp thành công thì call api chuyển tiền
             if(callApiConfirmOtp(otpField.getText())){
-                transferIn = new TransferIn.TransferBuilder()
-                    .setCreditAccount(creditAccount.getText())
-                    .setDebitAccount(LoginPanel.ebankInfo.getMainAccount())
-                    .setAmount(Integer.parseInt(transAmount.getText()))
-                    .setSessionId(LoginPanel.userInfoShare.getSessionId())
-                    .setCustomerID(LoginPanel.ebankInfo.getCustomerId())
-                    .setDesc(transDesc.getText())
-                        .setOtp(otpField.getText())
-                    .build();
+                try {
+                    transferIn = new TransferIn.TransferBuilder()
+                            .setCreditAccount(creditAccount.getText())
+                            .setDebitAccount(LoginPanel.ebankInfo.getMainAccount())
+                            .setAmount(Integer.parseInt(transAmount.getText()))
+                            .setSessionId(LoginPanel.userInfoShare.getSessionId())
+                            .setCustomerID(LoginPanel.ebankInfo.getCustomerId())
+                            .setDesc(transDesc.getText())
+                            .setOtp(otpField.getText())
+                            .build();
+                    System.out.println("vao day");
+                }
+                catch (Exception ex) {
+                    ex.printStackTrace();
+                }
 
                 callFundTransferIn();
             }
@@ -228,7 +234,7 @@ public class FundTransferInPanel extends JPanel {
             return;
         }
 
-        JOptionPane.showMessageDialog(this, "lấy mã opt thành công", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, "lấy mã opt thành công", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
         transId=enquiry.optString("transId");
     }
 
@@ -267,6 +273,7 @@ public class FundTransferInPanel extends JPanel {
         ErrorInfo error=null;
         JSONObject response= FundTransferInApiClient.getFundTransferIn(transferIn);
         if (response==null){
+            JOptionPane.showMessageDialog(this, "chuyển tiền không thành cong", "Lỗi", JOptionPane.ERROR_MESSAGE);
             System.out.println("lỗi ko call được api");
             return;
         }
@@ -283,7 +290,7 @@ public class FundTransferInPanel extends JPanel {
             return;
         }
 
-        JSONObject transaction=body.optJSONObject("enquiry");
+        JSONObject transaction=body.optJSONObject("transaction");
         if (transaction==null) {
             JOptionPane.showMessageDialog(this, "không thể chuyển tiền", "Lỗi", JOptionPane.ERROR_MESSAGE);
             return;
@@ -291,7 +298,5 @@ public class FundTransferInPanel extends JPanel {
 
         JOptionPane.showMessageDialog(this, "chuyển tiền thành công", "", JOptionPane.INFORMATION_MESSAGE);
         return;
-
-
     }
 }

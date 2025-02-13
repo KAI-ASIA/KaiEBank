@@ -14,6 +14,8 @@ public class AuthApiClient {
     private static String username;
     private static String userEmail;
 
+    private static String transId;
+
     // Tạo header chung cho API
     private static JSONObject createHeader() {
         JSONObject header = new JSONObject();
@@ -98,6 +100,7 @@ public class AuthApiClient {
                 System.err.println("Không thể đổi mật khẩu: sessionId null. Vui lòng đăng nhập lại.");
                 return null;
             }
+            transId="AUTHEN-changePass-" + System.currentTimeMillis();
 
             JSONObject enquiry = new JSONObject();
             enquiry.put("authenType", "changePassword");
@@ -106,7 +109,7 @@ public class AuthApiClient {
             enquiry.put("oldPassword", oldPassword);
             enquiry.put("newPassword", newPassword);
             enquiry.put("reNewPassword", reNewPassword);
-            enquiry.put("transId", "AUTHEN-changePass-" + System.currentTimeMillis());
+            enquiry.put("transId", transId);
 
             JSONObject requestJson = createRequest("GET_ENQUIRY", enquiry);
             System.out.println("Gửi request đổi mật khẩu: " + requestJson.toString(4));
@@ -128,6 +131,7 @@ public class AuthApiClient {
                 System.err.println("Không thể lấy OTP: sessionId hoặc username null. Vui lòng đăng nhập lại.");
                 return null;
             }
+            transId="AUTHEN-getOTP-" + System.currentTimeMillis();
 
             // Khởi tạo request JSON
             JSONObject requestJson = new JSONObject();
@@ -155,7 +159,7 @@ public class AuthApiClient {
             enquiry.put("username", username);
             enquiry.put("gmail", "qthe23572@gmail.com");
             enquiry.put("transTime", System.currentTimeMillis());
-            enquiry.put("transId", "AUTHEN-getOTP-" + System.currentTimeMillis());
+            enquiry.put("transId", transId);
             enquiry.put("transInfo", "Giao dịch lấy mã OTP");
 
             // Tạo SMS Params
@@ -218,7 +222,7 @@ public class AuthApiClient {
             enquiry.put("username", username);
             enquiry.put("otp", otp);
             enquiry.put("transTime", "20161108122000");
-            enquiry.put("transId", "AUTHEN-confirmOTP-45122211");
+            enquiry.put("transId", transId);
 
 
             JSONObject requestJson = createRequest("GET_ENQUIRY", enquiry);
@@ -308,9 +312,10 @@ public class AuthApiClient {
     // REQUEST_RESET_CODE
     public static JSONObject requestResetCode(String username) {
         try {
+            transId="AUTHEN-resetPassword-" + System.currentTimeMillis();
             JSONObject enquiry = new JSONObject();
             enquiry.put("authenType", "resetPassword");
-            enquiry.put("transId", "AUTHEN-resetPassword-" + System.currentTimeMillis());
+            enquiry.put("transId",transId );
             enquiry.put("username", username);
 
             JSONObject requestJson = createRequest("GET_ENQUIRY", enquiry);
@@ -329,9 +334,10 @@ public class AuthApiClient {
     // RESET_PASSWORD
     public static JSONObject resetPassword(ResetPasswordInfo resetPasswordInfo) {
         try {
+
             JSONObject enquiry = new JSONObject();
             enquiry.put("authenType", "setPassword");
-            enquiry.put("transId", "AUTHEN-setPassword-" + System.currentTimeMillis());
+            enquiry.put("transId", transId);
             enquiry.put("username", resetPasswordInfo.getUsername());
             enquiry.put("resetCode", resetPasswordInfo.getResetCode());
             enquiry.put("newPassword", resetPasswordInfo.getNewPassword());

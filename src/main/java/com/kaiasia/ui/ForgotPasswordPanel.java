@@ -171,6 +171,7 @@ public class ForgotPasswordPanel extends JPanel {
                 .username(username)
                 .newPassword(newPassword)
                 .resetCode(resetCode)
+
                 .build();
 
         JSONObject response = AuthApiClient.resetPassword(resetPasswordInfo);
@@ -185,11 +186,10 @@ public class ForgotPasswordPanel extends JPanel {
         if (error != null) {
             String errorMsg = error.optString("desc", "Lỗi không xác định");
             System.out.println("Lỗi API: " + errorMsg);
+            JOptionPane.showMessageDialog(this, error.optString("desc"), "Lỗi", JOptionPane.ERROR_MESSAGE);
         } else {
             System.out.println("Đặt lại mật khẩu thành công!");
         }
     }
-
-
 
 }
