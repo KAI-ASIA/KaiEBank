@@ -59,13 +59,6 @@ public class FundsTransferApiClient {
 
                 // Gọi API FT Out
                 String ftOutResponse = HttpUtils.postJson(Config.FUNDSTRANSFER_API_URL, ftOutRequest.toString());
-//                JSONObject ftOutJsonResponse = new JSONObject(ftOutResponse);
-//                System.out.println("Response từ FT Out API: " + ftOutJsonResponse.toString(4));
-//
-//                if (!"SUCCESS".equals(ftOutJsonResponse.optJSONObject("body").optString("status"))) {
-//                    System.err.println("Lỗi khi gọi FT Out, không thể trừ tiền!");
-//                    return ftOutJsonResponse;  // Trả về lỗi nếu không trừ tiền được
-//                }
 
                 // Nếu FT Out thành công, gọi Napas API
                 System.out.println("Gọi Napas API để hoàn tất giao dịch liên ngân hàng");

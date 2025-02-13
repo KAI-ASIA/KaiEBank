@@ -53,6 +53,13 @@ public class MainFrame extends JFrame {
         repaint();
     }
 
+    public void showFundsTransferInScreen(UserInfo userInfo) {
+        getContentPane().removeAll();
+        add(new FundsTransferInPanel(this, userInfo)); // Hiển thị trang FundsTransferInPanel
+        revalidate();
+        repaint();
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             new MainFrame().setVisible(true);

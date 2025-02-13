@@ -27,7 +27,7 @@ public class DashboardPanel extends JPanel {
 
         // Sidebar
         JPanel sidebar = new JPanel();
-        sidebar.setLayout(new GridLayout(6, 1, 10, 10));
+        sidebar.setLayout(new GridLayout(7, 1, 10, 10));
         sidebar.setBackground(new Color(240, 240, 240));
         sidebar.setPreferredSize(new Dimension(250, getHeight()));
 
@@ -46,11 +46,21 @@ public class DashboardPanel extends JPanel {
 
         JButton btnHome = new JButton("🏠 Trang chủ");
         JButton btnAccounts = new JButton("💳 Tài khoản & Thẻ");
-        JButton btnTransfer = new JButton("💸 Chuyển tiền");
+        JButton btnInternalTransfer = new JButton("💳 Chuyển khoản nội bộ");
+        JButton btnNapasTransfer = new JButton("🌍 Chuyển khoản NAPAS");
         JButton btnFeatures = new JButton("⚙️ Tính năng khác");
         JButton btnLogout = new JButton("🚪 Đăng xuất");
 
-        btnTransfer.addActionListener(new ActionListener() {
+        // Xử lý sự kiện khi nhấn vào nút chuyển khoản nội bộ
+        btnInternalTransfer.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mainFrame.showFundsTransferInScreen(mainFrame.getCurrentUser());
+            }
+        });
+
+        // Xử lý sự kiện khi nhấn vào nút chuyển khoản NAPAS
+        btnNapasTransfer.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 mainFrame.showTransferScreen(mainFrame.getCurrentUser());
@@ -89,7 +99,8 @@ public class DashboardPanel extends JPanel {
         sidebar.add(lblUserName);
         sidebar.add(btnHome);
         sidebar.add(btnAccounts);
-        sidebar.add(btnTransfer);
+        sidebar.add(btnInternalTransfer);
+        sidebar.add(btnNapasTransfer);
         sidebar.add(btnFeatures);
         sidebar.add(btnLogout);
 
