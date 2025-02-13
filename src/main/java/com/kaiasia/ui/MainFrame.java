@@ -2,6 +2,9 @@ package com.kaiasia.ui;
 
 import com.kaiasia.model.UserInfo;
 import javax.swing.*;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 public class MainFrame extends JFrame {
     private static UserInfo currentUser;

@@ -1,5 +1,6 @@
 package com.kaiasia.ui;
 
+import com.kaiasia.FundsTransfer.FundsTransferApiClient;
 import com.kaiasia.model.UserInfo;
 import com.kaiasia.t24utils.T24UtilsApiClient;
 import org.json.JSONArray;
@@ -14,6 +15,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import static com.kaiasia.FundsTransfer.FundsTransferApiClient.formatCurrency;
 import static com.kaiasia.t24utils.T24UtilsApiClient.showAccountDetails;
 
 public class DashboardPanel extends JPanel {
@@ -163,7 +165,9 @@ public class DashboardPanel extends JPanel {
         lblAccountNumber.setFont(new Font("Arial", Font.PLAIN, 20));
         lblAccountNumber.setForeground(new Color(100, 100, 100));
 
-        JLabel lblBalance = new JLabel(currency + " " + balance);
+        double balanceValue = Double.parseDouble(balance);
+        String formattedBalance = formatCurrency(balanceValue);
+        JLabel lblBalance = new JLabel(currency + " " + formattedBalance);
         lblBalance.setFont(new Font("Arial", Font.BOLD, 24));
         lblBalance.setHorizontalAlignment(SwingConstants.RIGHT);
 

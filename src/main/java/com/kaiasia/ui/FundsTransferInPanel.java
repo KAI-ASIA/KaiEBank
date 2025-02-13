@@ -3,7 +3,6 @@ package com.kaiasia.ui;
 import com.kaiasia.FundsTransfer.FundsTransferApiClient;
 import com.kaiasia.auth.AuthApiClient;
 import com.kaiasia.model.UserInfo;
-import com.kaiasia.napas.NapasApiClient;
 import com.kaiasia.t24utils.T24UtilsApiClient;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -15,10 +14,12 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.kaiasia.FundsTransfer.FundsTransferApiClient.formatCurrency;
+
 public class FundsTransferInPanel extends JPanel {
     private JComboBox<String> senderAccountDropdown;
     private JTextField amountField, benAccField, transContentField;
-    private JLabel benAccNameLabel;
+    private JLabel benAccNameLabel, balanceLabel;
     private MainFrame mainFrame;
     private UserInfo userInfo;
     private Map<String, String> accountMap = new HashMap<>();
@@ -56,13 +57,21 @@ public class FundsTransferInPanel extends JPanel {
         senderAccountDropdown.setFont(new Font("Arial", Font.PLAIN, 16));
         inputPanel.add(senderAccountDropdown);
 
+        senderAccountDropdown.addActionListener(e -> fetchBalance());
+
+        inputPanel.add(createLabel("Số dư khả dụng:"));
+        balanceLabel = new JLabel(" ");
+        balanceLabel.setFont(new Font("Arial", Font.PLAIN, 16));
+        balanceLabel.setForeground(Color.RED);
+        inputPanel.add(balanceLabel);
+
         inputPanel.add(createLabel("Số tài khoản nhận:"));
         benAccField = createLargeTextField();
         inputPanel.add(benAccField);
 
         inputPanel.add(createLabel("Tên chủ tài khoản:"));
         benAccNameLabel = new JLabel(" ");
-        benAccNameLabel.setFont(new Font("Arial", Font.ITALIC, 14));
+        benAccNameLabel.setFont(new Font("Arial", Font.ITALIC, 16));
         benAccNameLabel.setForeground(Color.BLUE);
         inputPanel.add(benAccNameLabel);
 
@@ -152,6 +161,11 @@ public class FundsTransferInPanel extends JPanel {
             accountMap.put(altAccount, accountId); // Map từ altAccount → accountId
             accountMap.put(accountId, accountId);  // Map từ accountId → accountId
         }
+
+        if (senderAccountDropdown.getItemCount() > 0) {
+            senderAccountDropdown.setSelectedIndex(0); // Chọn tài khoản đầu tiên
+            fetchBalance(); // Gọi để hiển thị số dư
+        }
     }
 
     private void fetchAccountName() {
@@ -170,6 +184,28 @@ public class FundsTransferInPanel extends JPanel {
             if (response != null && "OK".equals(response.getJSONObject("body").optString("status"))) {
                 String accountName = response.getJSONObject("body").getJSONObject("enquiry").optString("shortTitle", "Không tìm thấy");
                 SwingUtilities.invokeLater(() -> benAccNameLabel.setText(accountName));
+            }
+        }).start();
+    }
+
+    private void fetchBalance() {
+        String selectedAccount = (String) senderAccountDropdown.getSelectedItem();
+        if (selectedAccount == null || selectedAccount.isEmpty()) {
+            balanceLabel.setText("Không xác định");
+            return;
+        }
+
+        new Thread(() -> {
+            JSONObject response = T24UtilsApiClient.getAccountInfo(selectedAccount);
+            if (response != null && "OK".equals(response.getJSONObject("body").optString("status"))) {
+                String balance = response.getJSONObject("body").getJSONObject("enquiry").optString("avaiBalance", "0");
+                try {
+                    double balanceValue = Double.parseDouble(balance);
+                    String formattedBalance = formatCurrency(balanceValue);
+                    SwingUtilities.invokeLater(() -> balanceLabel.setText(formattedBalance + " VND"));
+                } catch (NumberFormatException e) {
+                    SwingUtilities.invokeLater(() -> balanceLabel.setText("Không xác định"));
+                }
             }
         }).start();
     }
@@ -249,6 +285,12 @@ public class FundsTransferInPanel extends JPanel {
                 JOptionPane.showMessageDialog(otpDialog, "Vui lòng nhập mã OTP!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+
+//            JSONObject otpConfirmResponse = AuthApiClient.confirmOtp(userInfo.getSessionId(), userInfo.getUsername(), otpCode);
+//            if (otpConfirmResponse == null || !"SUCCESS".equals(otpConfirmResponse.optString("status"))) {
+//                JOptionPane.showMessageDialog(otpDialog, "Xác thực OTP thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+//                return;
+//            }
 
             JSONObject transferResponse = FundsTransferApiClient.transferFunds(userInfo.getSessionId(), userInfo.getCustomerID(), otpCode,
                     senderAccount, benAcc, INTERNAL_BANK_ID, amount, transContent, false

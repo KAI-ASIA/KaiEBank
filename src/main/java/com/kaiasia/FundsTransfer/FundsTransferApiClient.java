@@ -5,6 +5,10 @@ import com.kaiasia.util.HttpUtils;
 import org.json.JSONObject;
 import com.kaiasia.config.Config;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
+
 public class FundsTransferApiClient {
 
     private static JSONObject createHeader() {
@@ -101,6 +105,11 @@ public class FundsTransferApiClient {
             System.err.println("Lỗi ngoại lệ khi gửi yêu cầu chuyển tiền: " + ex.getMessage());
             return null;
         }
+    }
+
+    public static String formatCurrency(double amount) {
+        DecimalFormat formatter = (DecimalFormat) NumberFormat.getNumberInstance(Locale.GERMANY);
+        return formatter.format(amount);
     }
 
 }
