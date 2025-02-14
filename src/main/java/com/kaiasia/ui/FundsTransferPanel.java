@@ -28,6 +28,7 @@ public class FundsTransferPanel extends JPanel {
     private Map<String, String> accountMap = new HashMap<>();
     private JTextField bankCodeField;  // TextField để nhập mã ngân hàng
     private List<String> allBanks = new ArrayList<>(); // Lưu danh sách đầy đủ ngân hàng
+    private String lastTransId = null;
 
 
     public FundsTransferPanel(MainFrame mainFrame, UserInfo userInfo) {
@@ -306,12 +307,6 @@ public class FundsTransferPanel extends JPanel {
             return;
         }
 
-        JSONObject sessionResponse = AuthApiClient.takeSession(userInfo.getSessionId());
-        if (sessionResponse == null || !sessionResponse.has("body") || !"OK".equals(sessionResponse.getJSONObject("body").optString("status"))) {
-            JOptionPane.showMessageDialog(this, "Lỗi xác thực phiên làm việc!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
         boolean isFromFTOut = true;
 
         showOtpVerificationDialog(senderAccount, benAcc, amount, transContent, bankId, isExternal, isFromFTOut);
@@ -362,32 +357,63 @@ public class FundsTransferPanel extends JPanel {
                 String errorMessage = error.optString("desc", "Đã xảy ra lỗi khi lấy OTP!");
                 JOptionPane.showMessageDialog(otpDialog, "Lỗi: " + errorMessage, "Lỗi", JOptionPane.ERROR_MESSAGE);
             } else {
+                JSONObject enquiry = otpResponse.optJSONObject("body").optJSONObject("enquiry");
+                if (enquiry != null) {
+                    lastTransId = enquiry.optString("transId", null); // Lưu transId nhận được
+                    System.out.println("Lưu transId GET OTP: " + lastTransId);
+                }
                 JOptionPane.showMessageDialog(otpDialog, "OTP đã được gửi qua email!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             }
         });
 
         btnConfirm.addActionListener(e -> {
             String otpCode = txtOtp.getText().trim();
-            if (otpCode.isEmpty()) {
+            if (otpCode.isEmpty() || lastTransId == null) {
                 JOptionPane.showMessageDialog(otpDialog, "Vui lòng nhập mã OTP!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-//            JSONObject otpConfirmResponse = AuthApiClient.confirmOtp(userInfo.getSessionId(), userInfo.getUsername(), otpCode);
-//            if (otpConfirmResponse == null || !"SUCCESS".equals(otpConfirmResponse.optString("status"))) {
-//                JOptionPane.showMessageDialog(otpDialog, "Xác thực OTP thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
-//                return;
-//            }
+            // Debug transId trước khi gọi API
+            System.out.println("lastTransId đang sử dụng: " + lastTransId);
 
+            // Gửi request xác thực OTP
+            JSONObject otpConfirmResponse = AuthApiClient.confirmOtp(userInfo.getSessionId(), userInfo.getUsername(), otpCode, lastTransId);
+
+            // Kiểm tra phản hồi từ API
+            if (otpConfirmResponse == null) {
+                System.out.println("Không nhận được phản hồi từ API confirm OTP.");
+                JOptionPane.showMessageDialog(otpDialog, "Lỗi: Không nhận được phản hồi từ hệ thống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Lấy giá trị từ JSON
+            JSONObject body = otpConfirmResponse.optJSONObject("body");
+            JSONObject enquiry = (body != null) ? body.optJSONObject("enquiry") : null;
+            String status = otpConfirmResponse.optString("status", "");
+            String responseCode = (enquiry != null) ? enquiry.optString("responseCode", "") : "";
+
+            System.out.println("Status: " + status);
+            System.out.println("responseCode nhận được: " + responseCode);
+
+            if (!"OK".equals(status) && !"00".equals(responseCode)) {
+                JOptionPane.showMessageDialog(otpDialog, "Xác thực OTP thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Nếu OTP hợp lệ, tiếp tục chuyển tiền
+            System.out.println("Gửi yêu cầu chuyển tiền");
             JSONObject transferResponse = FundsTransferApiClient.transferFunds(userInfo.getSessionId(), userInfo.getCustomerID(), otpCode,
                     senderAccount, benAcc, bankId, amount, transContent, isExternal
             );
+
+            System.out.println("Transfer Response: " + (transferResponse != null ? transferResponse.toString(4) : "null"));
 
             if (transferResponse == null) {
                 JOptionPane.showMessageDialog(otpDialog, "Lỗi: Không nhận được phản hồi từ hệ thống!", "Lỗi", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
+            // Hiển thị thông báo thành công & đóng dialog
             JOptionPane.showMessageDialog(otpDialog, "Giao dịch thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
             otpDialog.dispose();
             mainFrame.showDashboard();
@@ -398,6 +424,7 @@ public class FundsTransferPanel extends JPanel {
         otpDialog.setLocationRelativeTo(mainFrame);
         otpDialog.setVisible(true);
     }
+
 
     private String extractBankId(String bankInfo) {
         if (bankInfo == null || bankInfo.isEmpty()) return "";

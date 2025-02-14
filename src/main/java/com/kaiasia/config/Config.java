@@ -22,11 +22,11 @@ public class Config {
     public static final String FUNDSTRANSFER_API_KEY = "fundstransferh04ng14md3ptr4iv4ilu0n";
 
     // CUSTOMER API
-    public static final String CUSTOMER_API_URL = "http://14.225.254.212:8088/CUSTOMER_API/process";
+    public static final String CUSTOMER_API_URL = "http://103.15.222.253:8088/CUSTOMER_API/process";
     public static final String CUSTOMER_API_KEY = "custinfoq51klfoni1ezxl5f2ckpfx671";
 
     // ACCOUNT API
-    public static final String ACCOUNT_API_URL = "http://14.225.254.212:8089/ACCOUNT_API/process";
+    public static final String ACCOUNT_API_URL = "http://103.15.222.253:8089/ACCOUNT_API/process";
     public static final String ACCOUNT_API_KEY = "accountq51klfoni1ezxl5f2ckpfx248";
 
     private Config() {

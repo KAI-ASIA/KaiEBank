@@ -122,31 +122,6 @@ public class AuthApiClient {
         }
     }
 
-    // TAKE_SESSION
-    public static JSONObject takeSession(String sessionId) {
-        try {
-            if (sessionId == null || sessionId.trim().isEmpty()) {
-                System.err.println("Lỗi: sessionId không được để trống!");
-                return null;
-            }
-
-            JSONObject enquiry = new JSONObject();
-            enquiry.put("authenType", "takeSession");
-            enquiry.put("sessionId", sessionId);
-
-            JSONObject requestJson = createRequest("GET_ENQUIRY", enquiry);
-            System.out.println("Gửi request lấy session: " + requestJson.toString(4));
-
-            String response = HttpUtils.postJson(Config.AUTH_API_URL, requestJson.toString());
-            return parseResponse(response, "TAKE_SESSION");
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            System.err.println("Lỗi ngoại lệ khi lấy session: " + ex.getMessage());
-            return null;
-        }
-    }
-
     // GET_OTP với email cho sẵn
     public static JSONObject getOtp() {
         try {
@@ -304,7 +279,7 @@ public class AuthApiClient {
     }
 
     // CONFIRM OTP
-    public static JSONObject confirmOtp(String sessionId, String username, String otp) {
+    public static JSONObject confirmOtp(String sessionId, String username, String otp, String transId) {
         try {
             if (sessionId == null || username == null || otp == null) {
                 System.err.println("Lỗi: sessionId, username hoặc otp không được null!");
@@ -317,7 +292,7 @@ public class AuthApiClient {
             enquiry.put("username", username);
             enquiry.put("otp", otp);
             enquiry.put("transTime", System.currentTimeMillis());
-            enquiry.put("transId", "AUTHEN-confirmOTP-" + System.currentTimeMillis());
+            enquiry.put("transId", transId);
 
             JSONObject requestJson = createRequest("GET_ENQUIRY", enquiry);
             System.out.println("Gửi request confirm OTP: " + requestJson.toString(4));
@@ -331,7 +306,6 @@ public class AuthApiClient {
             return null;
         }
     }
-
 
     // REQUEST_RESET_CODE
     public static JSONObject requestResetCode(String username) {
