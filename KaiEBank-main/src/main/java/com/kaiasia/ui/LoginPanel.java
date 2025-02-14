@@ -1,6 +1,8 @@
 package com.kaiasia.ui;
 
 import com.kaiasia.auth.AuthApiClient;
+import com.kaiasia.ebank.EbankApiClient;
+import com.kaiasia.model.Error.ErrorInfo;
 import com.kaiasia.model.UserInfo;
 import org.json.JSONObject;
 
@@ -16,6 +18,7 @@ public class LoginPanel extends JPanel {
     private JLabel lblForgotPassword;
     private MainFrame mainFrame;
     public static UserInfo userInfoShare;
+
 
     public LoginPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
@@ -192,4 +195,5 @@ public class LoginPanel extends JPanel {
 
         mainFrame.showDashboard();
     }
+
 }

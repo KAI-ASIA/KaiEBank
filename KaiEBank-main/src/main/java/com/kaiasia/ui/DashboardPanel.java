@@ -1,6 +1,9 @@
 package com.kaiasia.ui;
 
 import com.kaiasia.FundsTransfer.FundsTransferApiClient;
+import com.kaiasia.ebank.EbankApiClient;
+import com.kaiasia.model.EbankInfo;
+import com.kaiasia.model.Error.ErrorInfo;
 import com.kaiasia.model.UserInfo;
 import com.kaiasia.t24utils.T24UtilsApiClient;
 import org.json.JSONArray;
@@ -21,7 +24,7 @@ import static com.kaiasia.t24utils.T24UtilsApiClient.showAccountDetails;
 public class DashboardPanel extends JPanel {
     private MainFrame mainFrame;
     private JPanel accountPanel;
-
+    public static EbankInfo ebankInfo;
     public DashboardPanel(MainFrame mainFrame, UserInfo userInfo) {
         this.mainFrame = mainFrame;
         setLayout(new BorderLayout());
@@ -42,6 +45,7 @@ public class DashboardPanel extends JPanel {
         lblUserName.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                callApiGetAccountEbank();
                 mainFrame.showProfile(userInfo);
             }
         });
@@ -72,12 +76,12 @@ public class DashboardPanel extends JPanel {
         btnFeatures.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(
-                        mainFrame,
-                        "Tính năng đang được phát triển!",
-                        "Thông báo",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
+//                JOptionPane.showMessageDialog(
+//                        mainFrame,
+//                        "Tính năng đang được phát triển!",
+//                        "Thông báo",
+//                        JOptionPane.INFORMATION_MESSAGE
+//                );
             }
         });
 
@@ -252,5 +256,57 @@ public class DashboardPanel extends JPanel {
 
         revalidate();
         repaint();
+    }
+    private boolean callApiGetAccountEbank(){
+        ErrorInfo error=null;
+        JSONObject response= EbankApiClient.getAccountEbank(LoginPanel.userInfoShare);
+        if (response==null){
+            System.out.println("loi");
+            JOptionPane.showMessageDialog(this, "không thể lấy thông tin ebank", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        JSONObject errorResponse=response.optJSONObject("error");
+        if (error!=null){
+            error=new ErrorInfo(errorResponse.optString("code"),errorResponse.optString("desc"));
+            JOptionPane.showMessageDialog(this, error.getCode()+" : "+error.getDesc(), "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        JSONObject body=response.optJSONObject("body");
+        if(body==null|| !"OK".equals(body.optString("status"))){
+            JOptionPane.showMessageDialog(this,"không thể tìm" , "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        JSONObject enquiry=body.optJSONObject("enquiry");
+        if (enquiry==null) {
+            JOptionPane.showMessageDialog(this, "lỗi không tìm được thông tin tài khoản", "Lỗi", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+        System.out.println("đã tìm được thông tin tài khoản");
+        System.out.println(response.toString(4));
+
+        ebankInfo=new EbankInfo.Builder()
+                .setCustomerId(enquiry.optString("customerID"))
+                .setResponseCode(enquiry.optString("responseCode"))
+                .setCustomerType(enquiry.optString("customerType"))
+                .setCompany(enquiry.optString("company"))
+                .setNationality(enquiry.optString("nationality"))
+                .setPhone(enquiry.optString("phone"))
+                .setEmail(enquiry.optString("email"))
+                .setMainAccount(enquiry.optString("mainAccount"))
+                .setName(enquiry.optString("name"))
+                .setTrustedType(enquiry.optString("trustedType"))
+                .setLang(enquiry.optString("lang"))
+                .setStartDate(enquiry.optString("startDate"))
+                .setEndDate(enquiry.optString("endDate"))
+                .setPwDate(enquiry.optString("pwDate"))
+                .setUserLock(enquiry.optString("userLock"))
+                .setPackAge(enquiry.optString("packAge"))
+                .setUserStatus(enquiry.optString("userStatus"))
+                .build();
+
+
+        return true;
     }
 }

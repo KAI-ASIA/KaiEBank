@@ -34,29 +34,53 @@ public class ProfilePanel extends JPanel {
         gbc.gridy = 0;
         add(lblTitle, gbc);
 
-        lblName = new JLabel("Họ và tên: ");
         gbc.gridy++;
-        add(lblName, gbc);
+        add(new JLabel("Họ và tên: " + DashboardPanel.ebankInfo.getName()),gbc);
 
-        lblCustomerID = new JLabel("Mã khách hàng: " + userInfo.getCustomerID());
         gbc.gridy++;
-        add(lblCustomerID, gbc);
+        add(new JLabel("Mã khách hàng: " + DashboardPanel.ebankInfo.getCustomerId()),gbc);
 
-        lblPhone = new JLabel("Số điện thoại: ");
         gbc.gridy++;
-        add(lblPhone, gbc);
+        add(new JLabel("Số điện thoại: " +DashboardPanel.ebankInfo.getPhone()),gbc);
 
-        lblEmail = new JLabel("Email: ");
         gbc.gridy++;
-        add(lblEmail, gbc);
+        add(new JLabel("Email: " + DashboardPanel.ebankInfo.getEmail()),gbc);
 
-        lblAdress = new JLabel("Địa chỉ: ");
         gbc.gridy++;
-        add(lblAdress, gbc);
+        add(new JLabel("Loại khách hàng: " + DashboardPanel.ebankInfo.getCustomerType()),gbc);
 
-        lblUsername = new JLabel("Username: " + userInfo.getUsername());
         gbc.gridy++;
-        add(lblUsername, gbc);
+        add(new JLabel("Công ty: " +DashboardPanel.ebankInfo.getCompany()),gbc);
+
+        gbc.gridy++;
+        add(new JLabel("Quốc tịch: " + DashboardPanel.ebankInfo.getNationality()),gbc);
+
+        gbc.gridy++;
+        add(new JLabel("Tài khoản chính: " + DashboardPanel.ebankInfo.getMainAccount()), gbc);
+
+        gbc.gridy++;
+        add(new JLabel("Loại tin cậy: " + DashboardPanel.ebankInfo.getTrustedType()), gbc);
+
+        gbc.gridy++;
+        add(new JLabel("Ngôn ngữ: " + DashboardPanel.ebankInfo.getLang()), gbc);
+
+        gbc.gridy++;
+        add(new JLabel("Ngày bắt đầu: " + DashboardPanel.ebankInfo.getStartDate()), gbc);
+
+        gbc.gridy++;
+        add(new JLabel("Ngày kết thúc: " + DashboardPanel.ebankInfo.getEndDate()), gbc);
+
+        gbc.gridy++;
+        add(new JLabel("Ngày cấp mật khẩu: " + DashboardPanel.ebankInfo.getPwDate()), gbc);
+
+        gbc.gridy++;
+        add(new JLabel("Trạng thái khóa: " + DashboardPanel.ebankInfo.getUserLock()), gbc);
+
+        gbc.gridy++;
+        add(new JLabel("Gói dịch vụ: " + DashboardPanel.ebankInfo.getPackAge()), gbc);
+
+        gbc.gridy++;
+        add(new JLabel("Trạng thái người dùng: " + DashboardPanel.ebankInfo.getUserStatus()), gbc);
 
         JButton btnChangePassword = new JButton("Đổi mật khẩu");
         gbc.gridy++;
@@ -70,7 +94,7 @@ public class ProfilePanel extends JPanel {
         btnBack.addActionListener(e -> mainFrame.showDashboard());
 
         // Gọi API để cập nhật thông tin khách hàng từ CUSTOMER_API
-        loadCustomerInfo();
+
     }
 
     private void loadCustomerInfo() {
